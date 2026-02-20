@@ -275,7 +275,7 @@ class _QuestionnaireScreenState extends ConsumerState<QuestionnaireScreen> {
           data: SliderTheme.of(context).copyWith(
             activeTrackColor: AppColors.primaryBlue,
             thumbColor: AppColors.primaryBlue,
-            overlayColor: AppColors.primaryBlue.withOpacity(0.1),
+            overlayColor: AppColors.primaryBlue.withValues(alpha: 0.1),
             inactiveTrackColor: AppColors.border,
           ),
           child: Slider(

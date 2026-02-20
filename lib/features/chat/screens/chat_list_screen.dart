@@ -55,7 +55,7 @@ class ChatListScreen extends ConsumerWidget {
             width: 100,
             height: 100,
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withOpacity(0.1),
+              color: AppColors.primaryBlue.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -117,7 +117,7 @@ class _ChatTile extends ConsumerWidget {
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           leading: CircleAvatar(
             radius: 28,
-            backgroundColor: AppColors.primaryBlue.withOpacity(0.15),
+            backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.15),
             backgroundImage: user.photoUrls.isNotEmpty
                 ? CachedNetworkImageProvider(user.photoUrls.first)
                 : null,

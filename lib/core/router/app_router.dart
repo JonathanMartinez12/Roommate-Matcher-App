@@ -7,11 +7,7 @@ import '../../features/auth/screens/register_screen.dart';
 import '../../features/onboarding/screens/profile_setup_screen.dart';
 import '../../features/onboarding/screens/photo_upload_screen.dart';
 import '../../features/onboarding/screens/questionnaire_screen.dart';
-import '../../features/swipe/screens/swipe_screen.dart';
-import '../../features/matches/screens/matches_screen.dart';
-import '../../features/chat/screens/chat_list_screen.dart';
 import '../../features/chat/screens/chat_room_screen.dart';
-import '../../features/profile/screens/profile_screen.dart';
 import '../../features/profile/screens/settings_screen.dart';
 import '../../home/home_screen.dart';
 

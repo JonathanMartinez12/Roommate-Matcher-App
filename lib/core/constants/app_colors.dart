@@ -37,13 +37,13 @@ class AppColors {
   );
 
   static LinearGradient cardOverlayLike = LinearGradient(
-    colors: [like.withOpacity(0.0), like.withOpacity(0.6)],
+    colors: [like.withValues(alpha: 0.0), like.withValues(alpha: 0.6)],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
 
   static LinearGradient cardOverlayPass = LinearGradient(
-    colors: [pass.withOpacity(0.0), pass.withOpacity(0.6)],
+    colors: [pass.withValues(alpha: 0.0), pass.withValues(alpha: 0.6)],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );

@@ -52,7 +52,7 @@ class _SwipeCardState extends State<SwipeCard> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.15),
+              color: Colors.black.withValues(alpha: 0.15),
               blurRadius: 20,
               offset: const Offset(0, 8),
             ),
@@ -87,7 +87,7 @@ class _SwipeCardState extends State<SwipeCard> {
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
                       colors: [
-                        Colors.black.withOpacity(0.85),
+                        Colors.black.withValues(alpha: 0.85),
                         Colors.transparent,
                       ],
                     ),
@@ -120,7 +120,7 @@ class _SwipeCardState extends State<SwipeCard> {
   Widget _buildPhoto() {
     if (widget.user.photoUrls.isEmpty) {
       return Container(
-        color: AppColors.primaryBlue.withOpacity(0.15),
+        color: AppColors.primaryBlue.withValues(alpha: 0.15),
         child: Center(
           child: Text(
             widget.user.name.isNotEmpty ? widget.user.name[0].toUpperCase() : '?',
@@ -160,7 +160,7 @@ class _SwipeCardState extends State<SwipeCard> {
               borderRadius: BorderRadius.circular(2),
               color: i == _currentPhotoIndex
                   ? Colors.white
-                  : Colors.white.withOpacity(0.4),
+                  : Colors.white.withValues(alpha: 0.4),
             ),
           ),
         );
@@ -179,11 +179,11 @@ class _SwipeCardState extends State<SwipeCard> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.92),
+        color: Colors.white.withValues(alpha: 0.92),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.3),
+            color: color.withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -259,7 +259,7 @@ class _SwipeCardState extends State<SwipeCard> {
             Text(
               widget.user.bio,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.75),
+                color: Colors.white.withValues(alpha: 0.75),
                 fontSize: 13,
               ),
               maxLines: 2,

@@ -155,7 +155,7 @@ class ProfileScreen extends ConsumerWidget {
     if (user.photoUrls.isEmpty) {
       return Container(
         height: 300,
-        color: AppColors.primaryBlue.withOpacity(0.1),
+        color: AppColors.primaryBlue.withValues(alpha: 0.1),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

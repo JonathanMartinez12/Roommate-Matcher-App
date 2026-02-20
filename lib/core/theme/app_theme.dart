@@ -9,7 +9,6 @@ class AppTheme {
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.primaryBlue,
         brightness: Brightness.light,
-        background: AppColors.background,
         surface: AppColors.cardBackground,
       ),
       scaffoldBackgroundColor: AppColors.background,
@@ -116,7 +115,7 @@ class AppTheme {
         type: BottomNavigationBarType.fixed,
         elevation: 8,
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: 4,
         shadowColor: Colors.black12,
         shape: RoundedRectangleBorder(

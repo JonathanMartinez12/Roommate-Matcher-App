@@ -92,7 +92,7 @@ class MatchesScreen extends ConsumerWidget {
             width: 100,
             height: 100,
             decoration: BoxDecoration(
-              color: AppColors.primaryPurple.withOpacity(0.1),
+              color: AppColors.primaryPurple.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -156,7 +156,7 @@ class _MatchCard extends ConsumerWidget {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
+                  color: Colors.black.withValues(alpha: 0.08),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -174,7 +174,7 @@ class _MatchCard extends ConsumerWidget {
                           fit: BoxFit.cover,
                         )
                       : Container(
-                          color: AppColors.primaryBlue.withOpacity(0.15),
+                          color: AppColors.primaryBlue.withValues(alpha: 0.15),
                           child: Center(
                             child: Text(
                               user.name[0].toUpperCase(),
@@ -199,7 +199,7 @@ class _MatchCard extends ConsumerWidget {
                           begin: Alignment.bottomCenter,
                           end: Alignment.topCenter,
                           colors: [
-                            Colors.black.withOpacity(0.8),
+                            Colors.black.withValues(alpha: 0.8),
                             Colors.transparent,
                           ],
                         ),
@@ -227,7 +227,7 @@ class _MatchCard extends ConsumerWidget {
                           Text(
                             match.lastMessage!,
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.75),
+                              color: Colors.white.withValues(alpha: 0.75),
                               fontSize: 11,
                             ),
                             maxLines: 1,

@@ -82,7 +82,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           children: [
             CircleAvatar(
               radius: 18,
-              backgroundColor: AppColors.primaryBlue.withOpacity(0.15),
+              backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.15),
               backgroundImage: widget.matchedUserPhoto.isNotEmpty
                   ? CachedNetworkImageProvider(widget.matchedUserPhoto)
                   : null,
@@ -236,7 +236,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primaryBlue.withOpacity(0.3),
+                    color: AppColors.primaryBlue.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),

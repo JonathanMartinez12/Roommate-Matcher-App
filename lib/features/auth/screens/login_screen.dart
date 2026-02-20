@@ -5,7 +5,6 @@ import 'package:email_validator/email_validator.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../providers/auth_provider.dart';
-import '../../../services/auth_service.dart';
 import '../../../shared/widgets/gradient_button.dart';
 import '../widgets/auth_text_field.dart';
 
@@ -148,7 +147,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.pass.withOpacity(0.1),
+                      color: AppColors.pass.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(

@@ -57,8 +57,8 @@ class _MatchPopupState extends State<MatchPopup>
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                AppColors.primaryBlue.withOpacity(0.95),
-                AppColors.primaryPurple.withOpacity(0.95),
+                AppColors.primaryBlue.withValues(alpha: 0.95),
+                AppColors.primaryPurple.withValues(alpha: 0.95),
               ],
             ),
           ),
@@ -83,7 +83,7 @@ class _MatchPopupState extends State<MatchPopup>
                       Text(
                         'You and \${widget.matchedUser.name} liked each other!',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.85),
+                          color: Colors.white.withValues(alpha: 0.85),
                           fontSize: 16,
                         ),
                       ),
@@ -111,7 +111,7 @@ class _MatchPopupState extends State<MatchPopup>
                         color: Colors.white,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
+                            color: Colors.black.withValues(alpha: 0.15),
                             blurRadius: 8,
                           ),
                         ],
@@ -177,7 +177,7 @@ class _MatchPopupState extends State<MatchPopup>
                         child: Text(
                           'Keep Swiping',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
+                            color: Colors.white.withValues(alpha: 0.8),
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
                           ),
@@ -203,7 +203,7 @@ class _MatchPopupState extends State<MatchPopup>
         border: Border.all(color: Colors.white, width: 4),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -213,7 +213,7 @@ class _MatchPopupState extends State<MatchPopup>
         child: photoUrl != null && photoUrl.isNotEmpty
             ? Image.network(photoUrl, fit: BoxFit.cover)
             : Container(
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 child: Center(
                   child: Text(
                     name.isNotEmpty ? name[0].toUpperCase() : '?',
