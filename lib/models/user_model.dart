@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class Questionnaire {
   final String sleepSchedule; // 'early_bird', 'night_owl', 'flexible'
   final int cleanliness; // 1-5
@@ -117,13 +115,10 @@ class UserModel {
           ? Questionnaire.fromMap(Map<String, dynamic>.from(map['questionnaire']))
           : null,
       isProfileComplete: map['isProfileComplete'] ?? false,
-      createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      createdAt: map['createdAt'] != null
+          ? DateTime.parse(map['createdAt'])
+          : DateTime.now(),
     );
-  }
-
-  factory UserModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-    return UserModel.fromMap(data, doc.id);
   }
 
   Map<String, dynamic> toMap() {
@@ -137,7 +132,7 @@ class UserModel {
       'photoUrls': photoUrls,
       'questionnaire': questionnaire?.toMap(),
       'isProfileComplete': isProfileComplete,
-      'createdAt': Timestamp.fromDate(createdAt),
+      'createdAt': createdAt.toIso8601String(),
     };
   }
 

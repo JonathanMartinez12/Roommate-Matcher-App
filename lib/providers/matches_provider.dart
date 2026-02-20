@@ -8,9 +8,10 @@ final matchesProvider = StreamProvider<List<MatchModel>>((ref) {
   final authState = ref.watch(authStateProvider);
   final userId = authState.valueOrNull?.uid;
   if (userId == null) return Stream.value([]);
-  return ref.watch(firestoreServiceProvider).matchesStream(userId);
+  return ref.watch(firestoreServiceProvider).matchesStream();
 });
 
-final matchUserProvider = FutureProvider.family<UserModel?, String>((ref, userId) async {
+final matchUserProvider =
+    FutureProvider.family<UserModel?, String>((ref, userId) async {
   return ref.watch(firestoreServiceProvider).getUser(userId);
 });

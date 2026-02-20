@@ -110,8 +110,7 @@ class _ChatTile extends ConsumerWidget {
       error: (_, __) => const SizedBox.shrink(),
       data: (user) {
         if (user == null) return const SizedBox.shrink();
-        final hasUnread = match.readStatus != null &&
-            match.readStatus![currentUserId] == false;
+        final hasUnread = match.readStatus[currentUserId] == false;
 
         return ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),

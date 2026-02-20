@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class MessageModel {
   final String id;
   final String senderId;
@@ -15,22 +13,24 @@ class MessageModel {
     this.isRead = false,
   });
 
-  factory MessageModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+  factory MessageModel.fromMap(Map<String, dynamic> map) {
     return MessageModel(
-      id: doc.id,
-      senderId: data['senderId'] ?? '',
-      text: data['text'] ?? '',
-      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      isRead: data['isRead'] ?? false,
+      id: map['id'] ?? '',
+      senderId: map['senderId'] ?? '',
+      text: map['text'] ?? '',
+      createdAt: map['createdAt'] != null
+          ? DateTime.parse(map['createdAt'])
+          : DateTime.now(),
+      isRead: map['isRead'] ?? false,
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
+      'id': id,
       'senderId': senderId,
       'text': text,
-      'createdAt': Timestamp.fromDate(createdAt),
+      'createdAt': createdAt.toIso8601String(),
       'isRead': isRead,
     };
   }

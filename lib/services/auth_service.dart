@@ -1,75 +1,93 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_model.dart';
+import 'mock_data.dart';
 
 class AuthService {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final Ref _ref;
+  AuthService(this._ref);
 
-  Stream<User?> get authStateChanges => _auth.authStateChanges();
-  User? get currentUser => _auth.currentUser;
+  Future<void> signIn({
+    required String email,
+    required String password,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 600));
+    final user = MockData.currentUser.copyWith(email: email);
+    _ref.read(authNotifierProvider.notifier).setUser(user);
+  }
 
-  Future<UserCredential> signUp({
+  Future<void> signUp({
     required String email,
     required String password,
     required String name,
   }) async {
-    final credential = await _auth.createUserWithEmailAndPassword(
-      email: email.trim(),
-      password: password,
+    await Future.delayed(const Duration(milliseconds: 800));
+    final user = MockData.currentUser.copyWith(
+      email: email,
+      name: name,
+      isProfileComplete: false,
     );
-
-    // Create initial user document
-    await _firestore.collection('users').doc(credential.user!.uid).set({
-      'email': email.trim(),
-      'name': name.trim(),
-      'age': 18,
-      'major': '',
-      'university': '',
-      'bio': '',
-      'photoUrls': [],
-      'questionnaire': null,
-      'isProfileComplete': false,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
-
-    return credential;
-  }
-
-  Future<UserCredential> signIn({
-    required String email,
-    required String password,
-  }) async {
-    return _auth.signInWithEmailAndPassword(
-      email: email.trim(),
-      password: password,
-    );
+    _ref.read(authNotifierProvider.notifier).setUser(user);
   }
 
   Future<void> signOut() async {
-    await _auth.signOut();
+    _ref.read(authNotifierProvider.notifier).clearUser();
   }
 
   Future<void> sendPasswordResetEmail(String email) async {
-    await _auth.sendPasswordResetEmail(email: email.trim());
+    await Future.delayed(const Duration(milliseconds: 400));
   }
 
   Future<void> deleteAccount() async {
-    final user = _auth.currentUser;
-    if (user == null) return;
-
-    // Delete Firestore data
-    await _firestore.collection('users').doc(user.uid).delete();
-
-    // Delete auth account
-    await user.delete();
+    _ref.read(authNotifierProvider.notifier).clearUser();
   }
 
   Future<void> updateEmail(String newEmail) async {
-    await _auth.currentUser?.updateEmail(newEmail);
+    final current = _ref.read(authNotifierProvider);
+    if (current != null) {
+      _ref.read(authNotifierProvider.notifier).setUser(
+        current.copyWith(email: newEmail),
+      );
+    }
   }
 
-  Future<void> updatePassword(String newPassword) async {
-    await _auth.currentUser?.updatePassword(newPassword);
+  Future<void> updatePassword(String newPassword) async {}
+}
+
+// ── Auth Notifier ────────────────────────────────────────────────────────────
+
+class AuthNotifier extends StateNotifier<UserModel?> {
+  AuthNotifier() : super(null);
+
+  void setUser(UserModel user) => state = user;
+  void clearUser() => state = null;
+
+  void updateUser(UserModel Function(UserModel) updater) {
+    if (state != null) state = updater(state!);
   }
+}
+
+final authNotifierProvider =
+    StateNotifierProvider<AuthNotifier, UserModel?>((ref) => AuthNotifier());
+
+// ── Derived providers (keep same API shape used across screens) ──────────────
+
+/// Thin wrapper so screens can still call
+/// `ref.watch(authStateProvider).valueOrNull?.uid`
+final authStateProvider = Provider<AsyncValue<_AuthUser?>>((ref) {
+  final user = ref.watch(authNotifierProvider);
+  if (user == null) return const AsyncValue.data(null);
+  return AsyncValue.data(_AuthUser(user.id));
+});
+
+final currentUserProvider = Provider<AsyncValue<UserModel?>>((ref) {
+  final user = ref.watch(authNotifierProvider);
+  return AsyncValue.data(user);
+});
+
+final authServiceProvider =
+    Provider<AuthService>((ref) => AuthService(ref));
+
+class _AuthUser {
+  final String uid;
+  const _AuthUser(this.uid);
 }

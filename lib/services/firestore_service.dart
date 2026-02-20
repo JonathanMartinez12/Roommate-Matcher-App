@@ -1,164 +1,104 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_model.dart';
 import '../models/match_model.dart';
 import '../models/message_model.dart';
+import 'mock_data.dart';
 
-class FirestoreService {
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+/// In-memory mock of what was previously Firestore.
+/// All data resets when the app restarts — that's fine for local dev.
+class MockDataService {
+  final String currentUserId;
 
-  // ── Users ──────────────────────────────────────────────────────────
+  MockDataService(this.currentUserId);
+
+  // ── User methods ────────────────────────────────────────────────────────
   Future<UserModel?> getUser(String userId) async {
-    final doc = await _db.collection('users').doc(userId).get();
-    if (!doc.exists) return null;
-    return UserModel.fromFirestore(doc);
+    return MockData.getUserById(userId);
   }
 
   Stream<UserModel?> userStream(String userId) {
-    return _db.collection('users').doc(userId).snapshots().map((doc) {
-      if (!doc.exists) return null;
-      return UserModel.fromFirestore(doc);
-    });
+    return Stream.value(MockData.getUserById(userId));
   }
 
-  Future<void> updateUser(String userId, Map<String, dynamic> data) async {
-    await _db.collection('users').doc(userId).update(data);
-  }
+  Future<void> updateUser(String userId, Map<String, dynamic> data) async {}
+  Future<void> setUser(String userId, Map<String, dynamic> data) async {}
 
-  Future<void> setUser(String userId, Map<String, dynamic> data) async {
-    await _db.collection('users').doc(userId).set(data, SetOptions(merge: true));
-  }
+  // ── Swipe methods ───────────────────────────────────────────────────────
+  final List<String> _likedIds = [];
+  final List<String> _passedIds = [];
+  final List<MatchModel> _runtimeMatches = [];
 
-  // Get potential matches (users not yet swiped, different from current user)
-  Future<List<UserModel>> getPotentialMatches(
-    String currentUserId, {
+  Future<List<UserModel>> getPotentialMatches({
     List<String> excludeIds = const [],
   }) async {
-    final query = await _db
-        .collection('users')
-        .where('isProfileComplete', isEqualTo: true)
-        .limit(20)
-        .get();
-
-    final allExclude = {...excludeIds, currentUserId};
-
-    return query.docs
-        .where((doc) => !allExclude.contains(doc.id))
-        .map((doc) => UserModel.fromFirestore(doc))
-        .where((u) => u.photoUrls.isNotEmpty)
+    await Future.delayed(const Duration(milliseconds: 300));
+    final allExclude = {...excludeIds, currentUserId, ..._likedIds, ..._passedIds};
+    return MockData.profiles
+        .where((p) => !allExclude.contains(p.id))
         .toList();
   }
 
-  // ── Swipes ─────────────────────────────────────────────────────────
-  Future<Map<String, dynamic>> getSwipeData(String userId) async {
-    final doc = await _db.collection('swipes').doc(userId).get();
-    if (!doc.exists) {
-      return {'likes': [], 'passes': []};
-    }
-    return doc.data()!;
+  Future<bool> recordLike(String toUserId) async {
+    _likedIds.add(toUserId);
+    // 1-in-3 chance of a match for demo purposes
+    return _likedIds.length % 3 == 0;
   }
 
-  Future<void> recordLike(String fromUserId, String toUserId) async {
-    await _db.collection('swipes').doc(fromUserId).set({
-      'likes': FieldValue.arrayUnion([toUserId]),
-    }, SetOptions(merge: true));
+  Future<void> recordPass(String toUserId) async {
+    _passedIds.add(toUserId);
   }
 
-  Future<void> recordPass(String fromUserId, String toUserId) async {
-    await _db.collection('swipes').doc(fromUserId).set({
-      'passes': FieldValue.arrayUnion([toUserId]),
-    }, SetOptions(merge: true));
-  }
-
-  Future<bool> checkMutualLike(String userId1, String userId2) async {
-    final doc = await _db.collection('swipes').doc(userId2).get();
-    if (!doc.exists) return false;
-    final likes = List<String>.from(doc.data()?['likes'] ?? []);
-    return likes.contains(userId1);
-  }
-
-  // ── Matches ────────────────────────────────────────────────────────
-  Future<MatchModel> createMatch(String userId1, String userId2) async {
-    final matchRef = _db.collection('matches').doc();
+  MatchModel createMatch(String toUserId) {
     final match = MatchModel(
-      id: matchRef.id,
-      userIds: [userId1, userId2],
+      id: 'match_${DateTime.now().millisecondsSinceEpoch}',
+      userIds: [currentUserId, toUserId],
       createdAt: DateTime.now(),
-      readStatus: {userId1: true, userId2: false},
+      readStatus: {currentUserId: true, toUserId: false},
     );
-    await matchRef.set(match.toMap());
+    _runtimeMatches.add(match);
     return match;
   }
 
-  Stream<List<MatchModel>> matchesStream(String userId) {
-    return _db
-        .collection('matches')
-        .where('userIds', arrayContains: userId)
-        .orderBy('createdAt', descending: true)
-        .snapshots()
-        .map((snap) => snap.docs.map(MatchModel.fromFirestore).toList());
+  // ── Match methods ───────────────────────────────────────────────────────
+  Stream<List<MatchModel>> matchesStream() {
+    final seeded = MockData.matchesFor(currentUserId);
+    final all = [...seeded, ..._runtimeMatches];
+    return Stream.value(all);
   }
 
-  Future<MatchModel?> getMatch(String matchId) async {
-    final doc = await _db.collection('matches').doc(matchId).get();
-    if (!doc.exists) return null;
-    return MatchModel.fromFirestore(doc);
+  Future<UserModel?> getMatchUser(String userId) async {
+    return MockData.getUserById(userId);
   }
 
-  Future<void> updateMatchLastMessage(
-    String matchId,
-    String message,
-    String senderId,
-  ) async {
-    await _db.collection('matches').doc(matchId).update({
-      'lastMessage': message,
-      'lastMessageAt': FieldValue.serverTimestamp(),
-      'readStatus.$senderId': true,
-    });
-  }
+  // ── Message methods ─────────────────────────────────────────────────────
+  final Map<String, List<MessageModel>> _messages = {};
 
-  // ── Messages ───────────────────────────────────────────────────────
   Stream<List<MessageModel>> messagesStream(String matchId) {
-    return _db
-        .collection('messages')
-        .doc(matchId)
-        .collection('messages')
-        .orderBy('createdAt', descending: false)
-        .snapshots()
-        .map((snap) => snap.docs.map(MessageModel.fromFirestore).toList());
+    final seeded = MockData.messagesFor(matchId, currentUserId);
+    final runtime = _messages[matchId] ?? [];
+    final all = [...seeded, ...runtime];
+    return Stream.value(all);
   }
 
   Future<void> sendMessage({
     required String matchId,
-    required String senderId,
     required String text,
   }) async {
-    final batch = _db.batch();
-
-    final msgRef = _db
-        .collection('messages')
-        .doc(matchId)
-        .collection('messages')
-        .doc();
-
-    batch.set(msgRef, {
-      'senderId': senderId,
-      'text': text.trim(),
-      'createdAt': FieldValue.serverTimestamp(),
-      'isRead': false,
-    });
-
-    final matchRef = _db.collection('matches').doc(matchId);
-    batch.update(matchRef, {
-      'lastMessage': text.trim(),
-      'lastMessageAt': FieldValue.serverTimestamp(),
-    });
-
-    await batch.commit();
+    final msg = MessageModel(
+      id: 'msg_${DateTime.now().millisecondsSinceEpoch}',
+      senderId: currentUserId,
+      text: text.trim(),
+      createdAt: DateTime.now(),
+      isRead: false,
+    );
+    _messages.putIfAbsent(matchId, () => []).add(msg);
   }
 
-  Future<void> markMessagesRead(String matchId, String userId) async {
-    await _db.collection('matches').doc(matchId).update({
-      'readStatus.$userId': true,
-    });
-  }
+  Future<void> markMessagesRead(String matchId) async {}
 }
+
+final firestoreServiceProvider = Provider<MockDataService>((ref) {
+  // auth_provider.dart exports authNotifierProvider
+  // We import it indirectly via the provider graph
+  return MockDataService(kCurrentUserId);
+});

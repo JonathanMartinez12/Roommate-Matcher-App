@@ -1,31 +1,23 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_model.dart';
+import '../models/match_model.dart';
 import '../services/firestore_service.dart';
-import '../services/matching_service.dart';
 import 'auth_provider.dart';
 
 class SwipeNotifier extends StateNotifier<AsyncValue<List<UserModel>>> {
-  final FirestoreService _firestore;
+  final MockDataService _mock;
   final String _currentUserId;
+  final List<String> _swipedIds = [];
 
-  SwipeNotifier(this._firestore, this._currentUserId)
+  SwipeNotifier(this._mock, this._currentUserId)
       : super(const AsyncValue.loading()) {
     loadProfiles();
   }
 
-  List<String> _swipedIds = [];
-
   Future<void> loadProfiles() async {
     state = const AsyncValue.loading();
     try {
-      final swipeData = await _firestore.getSwipeData(_currentUserId);
-      _swipedIds = [
-        ...List<String>.from(swipeData['likes'] ?? []),
-        ...List<String>.from(swipeData['passes'] ?? []),
-      ];
-
-      final profiles = await _firestore.getPotentialMatches(
-        _currentUserId,
+      final profiles = await _mock.getPotentialMatches(
         excludeIds: _swipedIds,
       );
       state = AsyncValue.data(profiles);
@@ -35,20 +27,19 @@ class SwipeNotifier extends StateNotifier<AsyncValue<List<UserModel>>> {
   }
 
   Future<bool> like(String toUserId) async {
-    await _firestore.recordLike(_currentUserId, toUserId);
+    _swipedIds.add(toUserId);
     _removeProfile(toUserId);
-
-    // Check for mutual like
-    final isMutual = await _firestore.checkMutualLike(_currentUserId, toUserId);
-    if (isMutual) {
-      await _firestore.createMatch(_currentUserId, toUserId);
-      return true; // it's a match!
+    final isMatch = await _mock.recordLike(toUserId);
+    if (isMatch) {
+      _mock.createMatch(toUserId);
+      return true;
     }
     return false;
   }
 
   Future<void> pass(String toUserId) async {
-    await _firestore.recordPass(_currentUserId, toUserId);
+    _swipedIds.add(toUserId);
+    await _mock.recordPass(toUserId);
     _removeProfile(toUserId);
   }
 
@@ -58,20 +49,13 @@ class SwipeNotifier extends StateNotifier<AsyncValue<List<UserModel>>> {
     });
   }
 
-  int getCompatibility(UserModel other) {
-    final current = state.valueOrNull?.firstWhere(
-      (u) => u.id == other.id,
-      orElse: () => other,
-    );
-    if (current?.questionnaire == null) return 0;
-    // We need current user's questionnaire -- handled at widget level
-    return 0;
-  }
+  MatchModel? getLatestMatch() => _mock.createMatch(_currentUserId);
 }
 
-final swipeProvider = StateNotifierProvider<SwipeNotifier, AsyncValue<List<UserModel>>>((ref) {
+final swipeProvider =
+    StateNotifierProvider<SwipeNotifier, AsyncValue<List<UserModel>>>((ref) {
   final authState = ref.watch(authStateProvider);
   final userId = authState.valueOrNull?.uid ?? '';
-  final firestore = ref.watch(firestoreServiceProvider);
-  return SwipeNotifier(firestore, userId);
+  final mock = ref.watch(firestoreServiceProvider);
+  return SwipeNotifier(mock, userId);
 });

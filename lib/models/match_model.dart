@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class MatchModel {
   final String id;
   final List<String> userIds;
@@ -17,24 +15,28 @@ class MatchModel {
     this.readStatus = const {},
   });
 
-  factory MatchModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+  factory MatchModel.fromMap(Map<String, dynamic> map) {
     return MatchModel(
-      id: doc.id,
-      userIds: List<String>.from(data['userIds'] ?? []),
-      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      lastMessage: data['lastMessage'],
-      lastMessageAt: (data['lastMessageAt'] as Timestamp?)?.toDate(),
-      readStatus: Map<String, bool>.from(data['readStatus'] ?? {}),
+      id: map['id'] ?? '',
+      userIds: List<String>.from(map['userIds'] ?? []),
+      createdAt: map['createdAt'] != null
+          ? DateTime.parse(map['createdAt'])
+          : DateTime.now(),
+      lastMessage: map['lastMessage'],
+      lastMessageAt: map['lastMessageAt'] != null
+          ? DateTime.parse(map['lastMessageAt'])
+          : null,
+      readStatus: Map<String, bool>.from(map['readStatus'] ?? {}),
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
+      'id': id,
       'userIds': userIds,
-      'createdAt': Timestamp.fromDate(createdAt),
+      'createdAt': createdAt.toIso8601String(),
       'lastMessage': lastMessage,
-      'lastMessageAt': lastMessageAt != null ? Timestamp.fromDate(lastMessageAt!) : null,
+      'lastMessageAt': lastMessageAt?.toIso8601String(),
       'readStatus': readStatus,
     };
   }
