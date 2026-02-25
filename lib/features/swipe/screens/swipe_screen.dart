@@ -37,10 +37,9 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
     if (direction == CardSwiperDirection.right) {
       final isMatch = await notifier.like(profile.id);
       if (isMatch && mounted) {
-        // Find the match ID from Firestore — simplification: show popup with profile
         setState(() {
           _matchedUser = profile;
-          _matchId = '\${ref.read(authStateProvider).valueOrNull?.uid}_\${profile.id}';
+          _matchId = '${ref.read(authStateProvider).valueOrNull?.uid}_${profile.id}';
           _showMatch = true;
         });
       }
@@ -55,13 +54,28 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
     final currentUser = ref.watch(currentUserProvider).valueOrNull;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FF),
+      backgroundColor: AppColors.background,
       appBar: const RoomrAppBar(
         title: 'Roomr',
         useGradientTitle: true,
       ),
       body: Stack(
         children: [
+          // Subtle background gradient
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    AppColors.primary.withValues(alpha: 0.04),
+                    AppColors.secondary.withValues(alpha: 0.04),
+                  ],
+                ),
+              ),
+            ),
+          ),
           swipeState.when(
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (e, _) => Center(
@@ -70,7 +84,8 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
                 children: [
                   const Icon(Icons.error_outline, size: 48, color: AppColors.textHint),
                   const SizedBox(height: 12),
-                  Text('Error loading profiles', style: TextStyle(color: AppColors.textSecondary)),
+                  const Text('Error loading profiles',
+                      style: TextStyle(color: AppColors.textSecondary)),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () => ref.read(swipeProvider.notifier).loadProfiles(),
@@ -101,7 +116,7 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
               controller: _swiperController,
               cardsCount: profiles.length,
               numberOfCardsDisplayed: profiles.length > 2 ? 3 : profiles.length,
-              backCardOffset: const Offset(0, 16),
+              backCardOffset: const Offset(0, 18),
               padding: const EdgeInsets.all(0),
               onSwipe: (prevIndex, currentIndex, direction) {
                 _handleSwipe(profiles[prevIndex], direction);
@@ -124,32 +139,36 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
 
   Widget _buildActionButtons(List<UserModel> profiles) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(40, 12, 40, 24),
+      padding: const EdgeInsets.fromLTRB(32, 8, 32, 24),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Pass button
           _ActionButton(
             icon: Icons.close_rounded,
             color: AppColors.pass,
-            size: 60,
-            iconSize: 32,
+            size: 72,
+            iconSize: 36,
+            label: 'Nope',
             onTap: () => _swiperController.swipe(CardSwiperDirection.left),
           ),
-          // Super like
+          // Super like (smaller, center)
           _ActionButton(
             icon: Icons.star_rounded,
-            color: AppColors.primaryBlue,
-            size: 46,
-            iconSize: 24,
+            color: AppColors.superLike,
+            size: 52,
+            iconSize: 28,
+            label: 'Super',
             onTap: () => _swiperController.swipe(CardSwiperDirection.top),
           ),
           // Like button
           _ActionButton(
             icon: Icons.favorite_rounded,
             color: AppColors.like,
-            size: 60,
-            iconSize: 32,
+            size: 72,
+            iconSize: 36,
+            label: 'Like',
             onTap: () => _swiperController.swipe(CardSwiperDirection.right),
           ),
         ],
@@ -163,36 +182,42 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 100,
-            height: 100,
+            width: 110,
+            height: 110,
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withValues(alpha: 0.1),
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.primary.withValues(alpha: 0.12),
+                  AppColors.secondary.withValues(alpha: 0.12),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
-              Icons.explore_outlined,
-              size: 52,
-              color: AppColors.primaryBlue,
+            child: const Center(
+              child: Text('🏠', style: TextStyle(fontSize: 48)),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           const Text(
             "You've seen everyone!",
             style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
           const Text(
-            'Check back later for new roommates',
+            'Check back later for new roommates ✨',
             style: TextStyle(color: AppColors.textSecondary, fontSize: 15),
           ),
-          const SizedBox(height: 24),
-          ElevatedButton(
+          const SizedBox(height: 28),
+          ElevatedButton.icon(
             onPressed: () => ref.read(swipeProvider.notifier).loadProfiles(),
-            child: const Text('Refresh'),
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('Refresh'),
           ),
         ],
       ),
@@ -220,6 +245,7 @@ class _ActionButton extends StatelessWidget {
   final Color color;
   final double size;
   final double iconSize;
+  final String label;
   final VoidCallback onTap;
 
   const _ActionButton({
@@ -227,6 +253,7 @@ class _ActionButton extends StatelessWidget {
     required this.color,
     required this.size,
     required this.iconSize,
+    required this.label,
     required this.onTap,
   });
 
@@ -234,21 +261,40 @@ class _ActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: 0.25),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.28),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-          ],
-        ),
-        child: Icon(icon, color: color, size: iconSize),
+            child: Icon(icon, color: color, size: iconSize),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
       ),
     );
   }

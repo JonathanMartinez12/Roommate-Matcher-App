@@ -15,7 +15,7 @@ class ProfileScreen extends ConsumerWidget {
     final userAsync = ref.watch(currentUserProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FF),
+      backgroundColor: AppColors.background,
       appBar: RoomrAppBar(
         title: 'Profile',
         useGradientTitle: true,
@@ -41,7 +41,7 @@ class ProfileScreen extends ConsumerWidget {
     return SingleChildScrollView(
       child: Column(
         children: [
-          // Photo gallery
+          // Photo area
           _buildPhotoSection(user),
 
           Padding(
@@ -49,34 +49,25 @@ class ProfileScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Name + age
-                Row(
-                  children: [
-                    Text(
-                      '${user.name}, ${user.age}',
-                      style: const TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ],
+                // Name + badges row
+                Text(
+                  user.name,
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                    letterSpacing: -0.5,
+                  ),
                 ),
-                const SizedBox(height: 4),
-                Row(
+                const SizedBox(height: 10),
+                // Stats badges
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
                   children: [
-                    const Icon(Icons.school_outlined, size: 14, color: AppColors.textSecondary),
-                    const SizedBox(width: 4),
-                    Flexible(
-                      child: Text(
-                        '${user.major} • ${user.university}',
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 14,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
+                    _statBadge('${user.age} yrs', AppColors.primary),
+                    _statBadge(user.major, AppColors.secondary),
+                    _statBadge(user.university, AppColors.accent),
                   ],
                 ),
 
@@ -86,58 +77,44 @@ class ProfileScreen extends ConsumerWidget {
 
                 // Bio
                 if (user.bio.isNotEmpty) ...[
-                  const Text(
-                    'About me',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
+                  _sectionHeader('About me', AppColors.primary),
+                  const SizedBox(height: 10),
                   Text(
                     user.bio,
                     style: const TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 15,
-                      height: 1.5,
+                      height: 1.6,
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                 ],
 
                 // Preferences
                 if (user.questionnaire != null) ...[
-                  const Text(
-                    'Living Preferences',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
+                  _sectionHeader('Living Preferences', AppColors.secondary),
+                  const SizedBox(height: 14),
                   _buildPreferences(user.questionnaire!),
                 ],
 
                 const SizedBox(height: 28),
+
                 // Edit profile button
                 SizedBox(
                   width: double.infinity,
-                  height: 50,
-                  child: OutlinedButton(
+                  height: 52,
+                  child: OutlinedButton.icon(
                     onPressed: () => context.push('/onboarding/profile'),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: AppColors.primaryBlue, width: 1.5),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
+                    icon: const Icon(Icons.edit_outlined, size: 18),
+                    label: const Text(
                       'Edit Profile',
-                      style: TextStyle(
-                        color: AppColors.primaryBlue,
-                        fontWeight: FontWeight.w600,
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                      side: const BorderSide(color: AppColors.primary, width: 1.5),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
                       ),
                     ),
                   ),
@@ -151,21 +128,73 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
+  Widget _sectionHeader(String title, Color accentColor) {
+    return Row(
+      children: [
+        Container(
+          width: 4,
+          height: 20,
+          decoration: BoxDecoration(
+            color: accentColor,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _statBadge(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: color,
+        ),
+      ),
+    );
+  }
+
   Widget _buildPhotoSection(UserModel user) {
     if (user.photoUrls.isEmpty) {
       return Container(
-        height: 300,
-        color: AppColors.primaryBlue.withValues(alpha: 0.1),
+        height: 320,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              AppColors.primary.withValues(alpha: 0.15),
+              AppColors.secondary.withValues(alpha: 0.1),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                user.name[0].toUpperCase(),
+                user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
                 style: const TextStyle(
                   fontSize: 80,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.primaryBlue,
+                  color: AppColors.primary,
                 ),
               ),
             ],
@@ -175,7 +204,7 @@ class ProfileScreen extends ConsumerWidget {
     }
 
     return SizedBox(
-      height: 300,
+      height: 320,
       child: PageView.builder(
         itemCount: user.photoUrls.length,
         itemBuilder: (_, i) => CachedNetworkImage(
@@ -187,42 +216,84 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   Widget _buildPreferences(Questionnaire q) {
-    final prefs = [
-      ('Sleep', _sleepLabel(q.sleepSchedule), Icons.bedtime_outlined),
-      ('Cleanliness', '${q.cleanliness}/5', Icons.cleaning_services_outlined),
-      ('Noise', '${q.noiseTolerance}/5', Icons.volume_up_outlined),
-      ('Study', _studyLabel(q.studyHabits), Icons.menu_book_outlined),
-      ('Guests', _guestLabel(q.guestPolicy), Icons.people_outline),
-      ('Smoking', q.smoking ? 'Yes' : 'No', Icons.smoking_rooms_outlined),
-      ('Drinking', q.drinking ? 'Yes' : 'No', Icons.local_bar_outlined),
-      ('Pets', q.pets ? 'Yes' : 'No', Icons.pets_outlined),
-      ('Temp', _tempLabel(q.temperaturePreference), Icons.thermostat_outlined),
-    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _prefCategory('Sleep & Noise', AppColors.sleepColor, [
+          _prefItem('Sleep', _sleepLabel(q.sleepSchedule), Icons.bedtime_outlined, AppColors.sleepColor),
+          _prefItem('Cleanliness', '${q.cleanliness}/5', Icons.cleaning_services_outlined, AppColors.sleepColor),
+          _prefItem('Noise', _noiseLevelLabel(q.noiseLevel), Icons.volume_up_outlined, AppColors.sleepColor),
+          _prefItem('Morning', _morningLabel(q.morningRoutine), Icons.wb_sunny_outlined, AppColors.sleepColor),
+        ]),
+        const SizedBox(height: 14),
+        _prefCategory('Social Life', AppColors.socialColor, [
+          _prefItem('Friday', _fridayLabel(q.fridayNight), Icons.celebration_outlined, AppColors.socialColor),
+          _prefItem('Guests', _guestsFreqLabel(q.guestsFrequency), Icons.people_outline, AppColors.socialColor),
+          _prefItem('Overnight', _overnightLabel(q.overnightGuests), Icons.hotel_outlined, AppColors.socialColor),
+        ]),
+        const SizedBox(height: 14),
+        _prefCategory('Kitchen & Sharing', AppColors.kitchenColor, [
+          _prefItem('Kitchen', _kitchenLabel(q.kitchenHabits), Icons.kitchen_outlined, AppColors.kitchenColor),
+          _prefItem('Sharing', _sharingLabel(q.sharingComfort), Icons.handshake_outlined, AppColors.kitchenColor),
+          _prefItem('Budget', _rentLabel(q.rentBudget), Icons.attach_money, AppColors.kitchenColor),
+        ]),
+        const SizedBox(height: 14),
+        _prefCategory('Lifestyle', AppColors.lifestyleColor, [
+          _prefItem('Smoking', q.smoking ? 'OK' : 'No', Icons.smoking_rooms_outlined, AppColors.lifestyleColor),
+          _prefItem('Drinking', q.drinking ? 'OK' : 'No', Icons.local_bar_outlined, AppColors.lifestyleColor),
+          _prefItem('Pets', q.pets ? 'OK' : 'No', Icons.pets_outlined, AppColors.lifestyleColor),
+          _prefItem('Home freq', _homeFreqLabel(q.homeFrequency), Icons.home_outlined, AppColors.lifestyleColor),
+        ]),
+      ],
+    );
+  }
 
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: prefs.map((p) {
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: AppColors.border),
+  Widget _prefCategory(String title, Color color, List<Widget> chips) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: color,
+            letterSpacing: 0.3,
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(p.$3, size: 16, color: AppColors.primaryBlue),
-              const SizedBox(width: 6),
-              Text(
-                '${p.$1}: ${p.$2}',
-                style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
-              ),
-            ],
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: chips,
+        ),
+      ],
+    );
+  }
+
+  Widget _prefItem(String label, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 6),
+          Text(
+            '$label: $value',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
           ),
-        );
-      }).toList(),
+        ],
+      ),
     );
   }
 
@@ -234,28 +305,77 @@ class ProfileScreen extends ConsumerWidget {
     }
   }
 
-  String _studyLabel(String s) {
+  String _noiseLevelLabel(String s) {
     switch (s) {
-      case 'at_home': return 'At Home';
-      case 'library': return 'Library';
-      case 'cafe': return 'Cafe';
-      default: return 'Flexible';
+      case 'quiet': return 'Quiet';
+      case 'lively': return 'Lively';
+      default: return 'Background';
     }
   }
 
-  String _guestLabel(String s) {
+  String _morningLabel(String s) {
     switch (s) {
-      case 'never': return 'Never';
-      case 'frequently': return 'Often';
-      default: return 'Sometimes';
-    }
-  }
-
-  String _tempLabel(String s) {
-    switch (s) {
-      case 'cool': return 'Cool';
-      case 'warm': return 'Warm';
+      case 'quick': return 'Quick';
+      case 'long': return 'Long';
       default: return 'Moderate';
+    }
+  }
+
+  String _fridayLabel(String s) {
+    switch (s) {
+      case 'studying': return 'Netflix/Study';
+      case 'party': return 'Going out';
+      default: return 'Low-key';
+    }
+  }
+
+  String _guestsFreqLabel(String s) {
+    switch (s) {
+      case 'rarely': return 'Rarely';
+      case 'weekends': return 'Weekends';
+      case 'always': return 'Always';
+      default: return 'Monthly';
+    }
+  }
+
+  String _overnightLabel(String s) {
+    switch (s) {
+      case 'prefer_not': return 'Prefer not';
+      case 'fine': return 'Fine';
+      default: return 'Heads-up';
+    }
+  }
+
+  String _kitchenLabel(String s) {
+    switch (s) {
+      case 'cook': return 'Cook often';
+      case 'eat_out': return 'Eat out';
+      default: return 'Reheat';
+    }
+  }
+
+  String _sharingLabel(String s) {
+    switch (s) {
+      case 'separate': return 'Separate';
+      case 'share': return 'Shared home';
+      default: return 'Some sharing';
+    }
+  }
+
+  String _rentLabel(String s) {
+    switch (s) {
+      case 'under_600': return '< \$600';
+      case '900_1200': return '\$900–1200';
+      case '1200_plus': return '\$1200+';
+      default: return '\$600–900';
+    }
+  }
+
+  String _homeFreqLabel(String s) {
+    switch (s) {
+      case 'rarely': return 'Rarely';
+      case 'often': return 'Often';
+      default: return 'Sometimes';
     }
   }
 }

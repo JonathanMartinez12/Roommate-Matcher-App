@@ -49,45 +49,45 @@ class _SwipeCardState extends State<SwipeCard> {
       },
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(28),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.15),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
+              color: Colors.black.withValues(alpha: 0.18),
+              blurRadius: 24,
+              offset: const Offset(0, 10),
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(28),
           child: Stack(
             fit: StackFit.expand,
             children: [
               // Photo
               _buildPhoto(),
 
-              // Photo indicator dots
+              // Photo indicator bars
               if (widget.user.photoUrls.length > 1)
                 Positioned(
-                  top: 12,
-                  left: 12,
-                  right: 12,
+                  top: 14,
+                  left: 14,
+                  right: 14,
                   child: _buildPhotoDots(),
                 ),
 
-              // Gradient overlay
+              // Bottom gradient overlay
               Positioned(
                 bottom: 0,
                 left: 0,
                 right: 0,
-                height: 220,
+                height: 240,
                 child: Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
                       colors: [
-                        Colors.black.withValues(alpha: 0.85),
+                        Colors.black.withValues(alpha: 0.88),
                         Colors.transparent,
                       ],
                     ),
@@ -120,14 +120,23 @@ class _SwipeCardState extends State<SwipeCard> {
   Widget _buildPhoto() {
     if (widget.user.photoUrls.isEmpty) {
       return Container(
-        color: AppColors.primaryBlue.withValues(alpha: 0.15),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              AppColors.primary.withValues(alpha: 0.2),
+              AppColors.secondary.withValues(alpha: 0.2),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
         child: Center(
           child: Text(
             widget.user.name.isNotEmpty ? widget.user.name[0].toUpperCase() : '?',
             style: const TextStyle(
               fontSize: 96,
               fontWeight: FontWeight.bold,
-              color: AppColors.primaryBlue,
+              color: AppColors.primary,
             ),
           ),
         ),
@@ -154,10 +163,10 @@ class _SwipeCardState extends State<SwipeCard> {
       children: List.generate(widget.user.photoUrls.length, (i) {
         return Expanded(
           child: Container(
-            height: 3,
+            height: 4,
             margin: const EdgeInsets.symmetric(horizontal: 2),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(2),
+              borderRadius: BorderRadius.circular(4),
               color: i == _currentPhotoIndex
                   ? Colors.white
                   : Colors.white.withValues(alpha: 0.4),
@@ -170,35 +179,38 @@ class _SwipeCardState extends State<SwipeCard> {
 
   Widget _buildCompatibilityBadge() {
     final score = _compatibility;
-    final color = score >= 75
-        ? AppColors.like
-        : score >= 50
-            ? Colors.orange
-            : AppColors.pass;
+    final Color badgeColor;
+    if (score >= 75) {
+      badgeColor = AppColors.like;
+    } else if (score >= 50) {
+      badgeColor = AppColors.highlight;
+    } else {
+      badgeColor = AppColors.pass;
+    }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.92),
+        color: badgeColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: badgeColor.withValues(alpha: 0.4),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.bolt, color: color, size: 16),
-          const SizedBox(width: 4),
+          const Icon(Icons.bolt, color: Colors.white, size: 14),
+          const SizedBox(width: 3),
           Text(
-            '\$score%',
-            style: TextStyle(
-              color: color,
-              fontWeight: FontWeight.bold,
+            '$score%',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
               fontSize: 13,
             ),
           ),
@@ -210,7 +222,7 @@ class _SwipeCardState extends State<SwipeCard> {
   Widget _buildUserInfo() {
     final compat = _compatibility;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 26),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -222,32 +234,33 @@ class _SwipeCardState extends State<SwipeCard> {
                 widget.user.name,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 32,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.5,
                 ),
               ),
               const SizedBox(width: 8),
               Padding(
-                padding: const EdgeInsets.only(bottom: 3),
+                padding: const EdgeInsets.only(bottom: 4),
                 child: Text(
                   widget.user.age.toString(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.85),
+                    fontSize: 24,
                     fontWeight: FontWeight.w300,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 5),
           Row(
             children: [
               const Icon(Icons.school_outlined, color: Colors.white70, size: 14),
-              const SizedBox(width: 4),
+              const SizedBox(width: 5),
               Flexible(
                 child: Text(
-                  '\${widget.user.major} • \${widget.user.university}',
+                  '${widget.user.major} · ${widget.user.university}',
                   style: const TextStyle(color: Colors.white70, fontSize: 13),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -255,7 +268,7 @@ class _SwipeCardState extends State<SwipeCard> {
             ],
           ),
           if (widget.user.bio.isNotEmpty) ...[
-            const SizedBox(height: 6),
+            const SizedBox(height: 7),
             Text(
               widget.user.bio,
               style: TextStyle(
@@ -268,12 +281,19 @@ class _SwipeCardState extends State<SwipeCard> {
           ],
           if (compat > 0) ...[
             const SizedBox(height: 10),
-            Text(
-              MatchingService.compatibilityLabel(compat),
-              style: TextStyle(
-                color: compat >= 75 ? AppColors.like : Colors.white70,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                MatchingService.compatibilityLabel(compat),
+                style: TextStyle(
+                  color: compat >= 75 ? AppColors.like : Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ],

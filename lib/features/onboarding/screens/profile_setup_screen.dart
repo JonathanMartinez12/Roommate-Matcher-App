@@ -23,7 +23,6 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   @override
   void initState() {
     super.initState();
-    // Pre-fill name from auth
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = ref.read(currentUserProvider).valueOrNull;
       if (user != null) {
@@ -49,7 +48,6 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   Future<void> _next() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Save profile fields to auth state without triggering router re-evaluation
     ref.read(authNotifierProvider.notifier).updateUser((user) => user.copyWith(
           name: _nameCtrl.text.trim(),
           age: int.parse(_ageCtrl.text.trim()),
@@ -64,7 +62,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -100,7 +98,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                         validator: (v) => v!.trim().isEmpty ? 'Bio is required' : null),
                       const SizedBox(height: 32),
                       GradientButton(
-                        text: 'Continue',
+                        text: 'Continue →',
                         onPressed: _next,
                       ),
                     ],
@@ -118,25 +116,27 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 20),
       decoration: const BoxDecoration(
+        color: Colors.white,
         border: Border(bottom: BorderSide(color: AppColors.border)),
       ),
       child: Column(
         children: [
+          // Step bar
           Row(
             children: [
-              Expanded(child: _stepDot(1, active: true)),
-              const SizedBox(width: 8),
-              Expanded(child: _stepDot(2)),
-              const SizedBox(width: 8),
-              Expanded(child: _stepDot(3)),
+              Expanded(child: _stepDot(1, active: true, label: 'Profile')),
+              const SizedBox(width: 6),
+              Expanded(child: _stepDot(2, label: 'Photos')),
+              const SizedBox(width: 6),
+              Expanded(child: _stepDot(3, label: 'Quiz')),
             ],
           ),
           const SizedBox(height: 16),
           const Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              'Tell us about yourself',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              'Tell us about yourself 👤',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
             ),
           ),
           const Align(
@@ -151,15 +151,28 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     );
   }
 
-  Widget _stepDot(int step, {bool active = false}) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      height: 4,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(2),
-        gradient: active ? AppColors.primaryGradient : null,
-        color: active ? null : AppColors.border,
-      ),
+  Widget _stepDot(int step, {bool active = false, required String label}) {
+    return Column(
+      children: [
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          height: 4,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(2),
+            gradient: active ? AppColors.primaryGradient : null,
+            color: active ? null : AppColors.border,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+            color: active ? AppColors.primary : AppColors.textHint,
+          ),
+        ),
+      ],
     );
   }
 

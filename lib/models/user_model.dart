@@ -1,24 +1,36 @@
 class Questionnaire {
   final String sleepSchedule; // 'early_bird', 'night_owl', 'flexible'
   final int cleanliness; // 1-5
-  final int noiseTolerance; // 1-5
-  final String studyHabits; // 'at_home', 'library', 'cafe', 'flexible'
-  final String guestPolicy; // 'never', 'occasionally', 'frequently'
+  final int noiseTolerance; // 1-5 (kept for backward compat, defaults to 3)
+  final String fridayNight; // 'studying', 'lowkey', 'party'
+  final String guestsFrequency; // 'rarely', 'monthly', 'weekends', 'always'
+  final String overnightGuests; // 'prefer_not', 'heads_up', 'fine'
+  final String noiseLevel; // 'quiet', 'background', 'lively'
+  final String morningRoutine; // 'quick', 'moderate', 'long'
+  final String kitchenHabits; // 'cook', 'reheat', 'eat_out'
+  final String sharingComfort; // 'separate', 'some', 'share'
+  final String rentBudget; // 'under_600', '600_900', '900_1200', '1200_plus'
+  final String homeFrequency; // 'rarely', 'sometimes', 'often'
   final bool smoking;
   final bool drinking;
   final bool pets;
-  final String temperaturePreference; // 'cool', 'moderate', 'warm'
 
   const Questionnaire({
     required this.sleepSchedule,
     required this.cleanliness,
-    required this.noiseTolerance,
-    required this.studyHabits,
-    required this.guestPolicy,
+    this.noiseTolerance = 3,
+    required this.fridayNight,
+    required this.guestsFrequency,
+    required this.overnightGuests,
+    required this.noiseLevel,
+    required this.morningRoutine,
+    required this.kitchenHabits,
+    required this.sharingComfort,
+    required this.rentBudget,
+    required this.homeFrequency,
     required this.smoking,
     required this.drinking,
     required this.pets,
-    required this.temperaturePreference,
   });
 
   factory Questionnaire.fromMap(Map<String, dynamic> map) {
@@ -26,12 +38,18 @@ class Questionnaire {
       sleepSchedule: map['sleepSchedule'] ?? 'flexible',
       cleanliness: map['cleanliness'] ?? 3,
       noiseTolerance: map['noiseTolerance'] ?? 3,
-      studyHabits: map['studyHabits'] ?? 'flexible',
-      guestPolicy: map['guestPolicy'] ?? 'occasionally',
+      fridayNight: map['fridayNight'] ?? 'lowkey',
+      guestsFrequency: map['guestsFrequency'] ?? 'monthly',
+      overnightGuests: map['overnightGuests'] ?? 'heads_up',
+      noiseLevel: map['noiseLevel'] ?? 'background',
+      morningRoutine: map['morningRoutine'] ?? 'moderate',
+      kitchenHabits: map['kitchenHabits'] ?? 'reheat',
+      sharingComfort: map['sharingComfort'] ?? 'some',
+      rentBudget: map['rentBudget'] ?? '600_900',
+      homeFrequency: map['homeFrequency'] ?? 'sometimes',
       smoking: map['smoking'] ?? false,
       drinking: map['drinking'] ?? false,
       pets: map['pets'] ?? false,
-      temperaturePreference: map['temperaturePreference'] ?? 'moderate',
     );
   }
 
@@ -40,12 +58,18 @@ class Questionnaire {
       'sleepSchedule': sleepSchedule,
       'cleanliness': cleanliness,
       'noiseTolerance': noiseTolerance,
-      'studyHabits': studyHabits,
-      'guestPolicy': guestPolicy,
+      'fridayNight': fridayNight,
+      'guestsFrequency': guestsFrequency,
+      'overnightGuests': overnightGuests,
+      'noiseLevel': noiseLevel,
+      'morningRoutine': morningRoutine,
+      'kitchenHabits': kitchenHabits,
+      'sharingComfort': sharingComfort,
+      'rentBudget': rentBudget,
+      'homeFrequency': homeFrequency,
       'smoking': smoking,
       'drinking': drinking,
       'pets': pets,
-      'temperaturePreference': temperaturePreference,
     };
   }
 
@@ -53,23 +77,35 @@ class Questionnaire {
     String? sleepSchedule,
     int? cleanliness,
     int? noiseTolerance,
-    String? studyHabits,
-    String? guestPolicy,
+    String? fridayNight,
+    String? guestsFrequency,
+    String? overnightGuests,
+    String? noiseLevel,
+    String? morningRoutine,
+    String? kitchenHabits,
+    String? sharingComfort,
+    String? rentBudget,
+    String? homeFrequency,
     bool? smoking,
     bool? drinking,
     bool? pets,
-    String? temperaturePreference,
   }) {
     return Questionnaire(
       sleepSchedule: sleepSchedule ?? this.sleepSchedule,
       cleanliness: cleanliness ?? this.cleanliness,
       noiseTolerance: noiseTolerance ?? this.noiseTolerance,
-      studyHabits: studyHabits ?? this.studyHabits,
-      guestPolicy: guestPolicy ?? this.guestPolicy,
+      fridayNight: fridayNight ?? this.fridayNight,
+      guestsFrequency: guestsFrequency ?? this.guestsFrequency,
+      overnightGuests: overnightGuests ?? this.overnightGuests,
+      noiseLevel: noiseLevel ?? this.noiseLevel,
+      morningRoutine: morningRoutine ?? this.morningRoutine,
+      kitchenHabits: kitchenHabits ?? this.kitchenHabits,
+      sharingComfort: sharingComfort ?? this.sharingComfort,
+      rentBudget: rentBudget ?? this.rentBudget,
+      homeFrequency: homeFrequency ?? this.homeFrequency,
       smoking: smoking ?? this.smoking,
       drinking: drinking ?? this.drinking,
       pets: pets ?? this.pets,
-      temperaturePreference: temperaturePreference ?? this.temperaturePreference,
     );
   }
 }
