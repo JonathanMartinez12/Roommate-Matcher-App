@@ -11,7 +11,10 @@ class AuthService {
     required String password,
   }) async {
     await Future.delayed(const Duration(milliseconds: 600));
-    final user = MockData.currentUser.copyWith(email: email);
+    final user = MockData.currentUser.copyWith(
+      email: email,
+      isProfileComplete: false,
+    );
     _ref.read(authNotifierProvider.notifier).setUser(user);
   }
 

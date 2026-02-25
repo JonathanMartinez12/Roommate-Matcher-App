@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../providers/auth_provider.dart';
-import '../../../services/firestore_service.dart';
 import '../../../shared/widgets/gradient_button.dart';
 
 class ProfileSetupScreen extends ConsumerStatefulWidget {
@@ -20,7 +19,6 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   final _majorCtrl = TextEditingController();
   final _universityCtrl = TextEditingController();
   final _bioCtrl = TextEditingController();
-  bool _isLoading = false;
 
   @override
   void initState() {
@@ -50,30 +48,17 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
 
   Future<void> _next() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() => _isLoading = true);
 
-    try {
-      final userId = ref.read(authStateProvider).valueOrNull?.uid;
-      if (userId == null) return;
+    // Save profile fields to auth state without triggering router re-evaluation
+    ref.read(authNotifierProvider.notifier).updateUser((user) => user.copyWith(
+          name: _nameCtrl.text.trim(),
+          age: int.parse(_ageCtrl.text.trim()),
+          major: _majorCtrl.text.trim(),
+          university: _universityCtrl.text.trim(),
+          bio: _bioCtrl.text.trim(),
+        ));
 
-      await ref.read(firestoreServiceProvider).updateUser(userId, {
-        'name': _nameCtrl.text.trim(),
-        'age': int.parse(_ageCtrl.text.trim()),
-        'major': _majorCtrl.text.trim(),
-        'university': _universityCtrl.text.trim(),
-        'bio': _bioCtrl.text.trim(),
-      });
-
-      if (mounted) context.go('/onboarding/photos');
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: \${e.toString()}')),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+    if (mounted) context.go('/onboarding/photos');
   }
 
   @override
@@ -117,7 +102,6 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                       GradientButton(
                         text: 'Continue',
                         onPressed: _next,
-                        isLoading: _isLoading,
                       ),
                     ],
                   ),

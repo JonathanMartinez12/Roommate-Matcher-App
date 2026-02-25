@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../models/user_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
@@ -10,26 +12,39 @@ import '../../features/chat/screens/chat_room_screen.dart';
 import '../../features/profile/screens/settings_screen.dart';
 import '../../home/home_screen.dart';
 
+/// Bridges Riverpod auth state into a ChangeNotifier so GoRouter
+/// can re-run redirects without recreating the router on every state change.
+/// Uses .select() so only routing-relevant changes (login/logout, profile
+/// completion) trigger a re-evaluation — not every profile field update.
+class _RouterNotifier extends ChangeNotifier {
+  _RouterNotifier(Ref ref) {
+    ref.listen<(String?, bool?)>(
+      authNotifierProvider.select((u) => (u?.id, u?.isProfileComplete)),
+      (_, __) => notifyListeners(),
+    );
+  }
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
-  final currentUser = ref.watch(currentUserProvider);
+  final notifier = _RouterNotifier(ref);
 
   return GoRouter(
     initialLocation: '/login',
+    refreshListenable: notifier,
     redirect: (context, state) {
-      final isAuthenticated = authState.valueOrNull != null;
-      final isAuthRoute = state.matchedLocation == '/login' ||
-          state.matchedLocation == '/register';
+      final user = ref.read(authNotifierProvider);
+      final isAuthenticated = user != null;
+      final loc = state.matchedLocation;
+      final isAuthRoute = loc == '/login' || loc == '/register';
+      final isOnboardingRoute = loc.startsWith('/onboarding');
 
       if (!isAuthenticated && !isAuthRoute) return '/login';
 
-      if (isAuthenticated) {
-        if (isAuthRoute) {
-          // Check if profile is complete
-          final user = currentUser.valueOrNull;
-          if (user == null) return null; // Still loading
-          if (!user.isProfileComplete) return '/onboarding/profile';
-          return '/home';
+      if (isAuthenticated && user != null) {
+        if (!user.isProfileComplete) {
+          if (!isOnboardingRoute) return '/onboarding/profile';
+        } else {
+          if (isAuthRoute || isOnboardingRoute) return '/home';
         }
       }
 

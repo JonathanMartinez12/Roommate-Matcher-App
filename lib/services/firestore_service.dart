@@ -2,14 +2,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_model.dart';
 import '../models/match_model.dart';
 import '../models/message_model.dart';
+import 'auth_service.dart';
 import 'mock_data.dart';
 
 /// In-memory mock of what was previously Firestore.
 /// All data resets when the app restarts — that's fine for local dev.
 class MockDataService {
   final String currentUserId;
+  final Ref _ref;
 
-  MockDataService(this.currentUserId);
+  MockDataService(this.currentUserId, this._ref);
 
   // ── User methods ────────────────────────────────────────────────────────
   Future<UserModel?> getUser(String userId) async {
@@ -20,7 +22,24 @@ class MockDataService {
     return Stream.value(MockData.getUserById(userId));
   }
 
-  Future<void> updateUser(String userId, Map<String, dynamic> data) async {}
+  Future<void> updateUser(String userId, Map<String, dynamic> data) async {
+    if (userId != currentUserId) return;
+    _ref.read(authNotifierProvider.notifier).updateUser((user) {
+      return user.copyWith(
+        name: data['name'] as String? ?? user.name,
+        age: data['age'] as int? ?? user.age,
+        major: data['major'] as String? ?? user.major,
+        university: data['university'] as String? ?? user.university,
+        bio: data['bio'] as String? ?? user.bio,
+        isProfileComplete: data['isProfileComplete'] as bool? ?? user.isProfileComplete,
+        questionnaire: data.containsKey('questionnaire')
+            ? Questionnaire.fromMap(
+                Map<String, dynamic>.from(data['questionnaire'] as Map))
+            : user.questionnaire,
+      );
+    });
+  }
+
   Future<void> setUser(String userId, Map<String, dynamic> data) async {}
 
   // ── Swipe methods ───────────────────────────────────────────────────────
@@ -98,7 +117,5 @@ class MockDataService {
 }
 
 final firestoreServiceProvider = Provider<MockDataService>((ref) {
-  // auth_provider.dart exports authNotifierProvider
-  // We import it indirectly via the provider graph
-  return MockDataService(kCurrentUserId);
+  return MockDataService(kCurrentUserId, ref);
 });
