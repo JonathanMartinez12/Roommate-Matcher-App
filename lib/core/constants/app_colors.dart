@@ -1,40 +1,55 @@
-
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Primary gradient
-  static const Color primaryBlue = Color(0xFF3B82F6);
-  static const Color primaryPurple = Color(0xFF8B5CF6);
+  // Primary palette from prototype
+  static const Color navy = Color(0xFF16192A);
+  static const Color navyLight = Color(0xFF1E2235);
+  static const Color navySoft = Color(0xFF252A40);
+  static const Color cream = Color(0xFFD9DDD9);
+  static const Color creamLight = Color(0xFFE8EBE8);
+  static const Color creamDark = Color(0xFFC8CCC8);
+  static const Color terracotta = Color(0xFFC3543A);
+  static const Color terracottaLight = Color(0xFFD4654B);
+  static const Color terracottaSoft = Color(0x26C3543A);
+  static const Color bg = Color(0xFFD9DDD9);
+  static const Color surface = Color(0xFFFFFFFF);
+  static const Color surfaceAlt = Color(0xFFF4F4F2);
+  static const Color border = Color(0xFFC8CCC8);
+  static const Color borderLight = Color(0xFFE0E3E0);
+  static const Color text = Color(0xFF16192A);
+  static const Color textSoft = Color(0xFF3D4156);
+  static const Color textMuted = Color(0xFF6B7080);
+  static const Color textLight = Color(0xFF9A9FAB);
+  static const Color success = Color(0xFF2D8A5F);
 
-  // Action colors
-  static const Color like = Color(0xFF10B981);   // green
-  static const Color pass = Color(0xFFEF4444);   // red
-  static const Color superLike = Color(0xFFF59E0B); // amber
+  // Legacy aliases
+  static const Color primaryBlue = terracotta;
+  static const Color primaryPurple = terracottaLight;
+  static const Color like = Color(0xFF10B981);
+  static const Color pass = Color(0xFFEF4444);
+  static const Color superLike = Color(0xFFF59E0B);
+  static const Color background = bg;
+  static const Color cardBackground = surface;
+  static const Color textPrimary = text;
+  static const Color textSecondary = textSoft;
+  static const Color textHint = textMuted;
 
-  // Background
-  static const Color background = Color(0xFFF8FAFC);
-  static const Color cardBackground = Colors.white;
-  static const Color surface = Color(0xFFF1F5F9);
-
-  // Text
-  static const Color textPrimary = Color(0xFF0F172A);
-  static const Color textSecondary = Color(0xFF64748B);
-  static const Color textHint = Color(0xFF94A3B8);
-
-  // Border
-  static const Color border = Color(0xFFE2E8F0);
-
-  // Gradient
   static const LinearGradient primaryGradient = LinearGradient(
-    colors: [primaryBlue, primaryPurple],
+    colors: [terracotta, terracottaLight],
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
   );
 
   static const LinearGradient primaryGradientVertical = LinearGradient(
-    colors: [primaryBlue, primaryPurple],
+    colors: [terracotta, terracottaLight],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
+  );
+
+  static const LinearGradient navyGradient = LinearGradient(
+    colors: [navy, Color(0xFF2A2D45)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
   );
 
   static LinearGradient cardOverlayLike = LinearGradient(
@@ -49,8 +64,8 @@ class AppColors {
     end: Alignment.bottomCenter,
   );
 
-  static LinearGradient cardOverlayInfo = LinearGradient(
-    colors: [Colors.transparent, Colors.black87],
+  static const LinearGradient cardOverlayInfo = LinearGradient(
+    colors: [Colors.transparent, Color(0xE516192A)],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Questionnaire {
   final String sleepSchedule; // 'early_bird', 'night_owl', 'flexible'
   final int cleanliness; // 1-5
@@ -87,6 +89,12 @@ class UserModel {
   final bool isProfileComplete;
   final DateTime createdAt;
 
+  /// Up to 2 lifestyle dealbreakers — users whose profile violates any of
+  /// these will never appear in this user's swipe deck (and vice versa).
+  /// Valid values: 'smoking', 'drinking', 'pets',
+  ///               'no_night_owl', 'no_early_bird', 'no_guests'
+  final List<String> dealbreakers;
+
   const UserModel({
     required this.id,
     required this.email,
@@ -99,6 +107,7 @@ class UserModel {
     this.questionnaire,
     required this.isProfileComplete,
     required this.createdAt,
+    this.dealbreakers = const [],
   });
 
   factory UserModel.fromMap(Map<String, dynamic> map, String id) {
@@ -115,9 +124,8 @@ class UserModel {
           ? Questionnaire.fromMap(Map<String, dynamic>.from(map['questionnaire']))
           : null,
       isProfileComplete: map['isProfileComplete'] ?? false,
-      createdAt: map['createdAt'] != null
-          ? DateTime.parse(map['createdAt'])
-          : DateTime.now(),
+      createdAt: _toDateTime(map['createdAt']),
+      dealbreakers: List<String>.from(map['dealbreakers'] ?? []),
     );
   }
 
@@ -132,7 +140,8 @@ class UserModel {
       'photoUrls': photoUrls,
       'questionnaire': questionnaire?.toMap(),
       'isProfileComplete': isProfileComplete,
-      'createdAt': createdAt.toIso8601String(),
+      'createdAt': Timestamp.fromDate(createdAt),
+      'dealbreakers': dealbreakers,
     };
   }
 
@@ -148,6 +157,7 @@ class UserModel {
     Questionnaire? questionnaire,
     bool? isProfileComplete,
     DateTime? createdAt,
+    List<String>? dealbreakers,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -161,9 +171,17 @@ class UserModel {
       questionnaire: questionnaire ?? this.questionnaire,
       isProfileComplete: isProfileComplete ?? this.isProfileComplete,
       createdAt: createdAt ?? this.createdAt,
+      dealbreakers: dealbreakers ?? this.dealbreakers,
     );
   }
 
   String get firstName => name.split(' ').first;
   String get primaryPhoto => photoUrls.isNotEmpty ? photoUrls.first : '';
+}
+
+DateTime _toDateTime(dynamic value) {
+  if (value == null) return DateTime.now();
+  if (value is Timestamp) return value.toDate();
+  if (value is String) return DateTime.tryParse(value) ?? DateTime.now();
+  return DateTime.now();
 }

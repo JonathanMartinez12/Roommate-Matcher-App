@@ -20,14 +20,22 @@ service cloud.firestore {
       allow read: if request.auth != null;
       allow write: if request.auth.uid == userId;
     }
-    match /swipes/{userId} {
+    // Outgoing swipes: only the swiper can read/write their own outgoing list
+    match /swipes/{userId}/outgoing/{toUserId} {
       allow read, write: if request.auth.uid == userId;
+    }
+    // Incoming swipes: the swiper writes to the target's incoming list;
+    // the target reads their own incoming list (for profile view counts)
+    match /swipes/{userId}/incoming/{fromUserId} {
+      allow read: if request.auth.uid == userId;
+      allow write: if request.auth != null;
     }
     match /matches/{matchId} {
       allow read: if request.auth.uid in resource.data.userIds;
       allow create: if request.auth != null;
+      allow update: if request.auth.uid in resource.data.userIds;
     }
-    match /messages/{matchId}/messages/{messageId} {
+    match /matches/{matchId}/messages/{messageId} {
       allow read, write: if request.auth != null;
     }
   }

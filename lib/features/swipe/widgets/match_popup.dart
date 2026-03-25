@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../models/user_model.dart';
+import '../../../services/matching_service.dart';
 
 class MatchPopup extends StatefulWidget {
   final UserModel currentUser;
@@ -21,19 +24,22 @@ class MatchPopup extends StatefulWidget {
   State<MatchPopup> createState() => _MatchPopupState();
 }
 
-class _MatchPopupState extends State<MatchPopup>
-    with SingleTickerProviderStateMixin {
+class _MatchPopupState extends State<MatchPopup> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnim;
   late Animation<double> _fadeAnim;
 
+  int get _compatibility {
+    final a = widget.currentUser.questionnaire;
+    final b = widget.matchedUser.questionnaire;
+    if (a == null || b == null) return 85;
+    return MatchingService.calculateCompatibility(a, b);
+  }
+
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 600),
-    );
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 500));
     _scaleAnim = CurvedAnimation(parent: _controller, curve: Curves.elasticOut);
     _fadeAnim = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
     _controller.forward();
@@ -52,179 +58,99 @@ class _MatchPopupState extends State<MatchPopup>
       child: FadeTransition(
         opacity: _fadeAnim,
         child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                AppColors.primaryBlue.withValues(alpha: 0.95),
-                AppColors.primaryPurple.withValues(alpha: 0.95),
-              ],
-            ),
-          ),
-          child: SafeArea(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ScaleTransition(
-                  scale: _scaleAnim,
+          color: AppColors.navy.withValues(alpha: 0.9),
+          child: BackdropFilter(
+            filter: const ColorFilter.mode(Colors.transparent, BlendMode.src),
+            child: Center(
+              child: ScaleTransition(
+                scale: _scaleAnim,
+                child: Container(
+                  width: 420,
+                  margin: const EdgeInsets.all(32),
+                  padding: const EdgeInsets.all(48),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 40)],
+                  ),
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text(
-                        "It's a Match!",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 42,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: -1,
-                        ),
+                      const Text('🎉', style: TextStyle(fontSize: 60)),
+                      const SizedBox(height: 20),
+                      Text(
+                        "It's a match!",
+                        style: GoogleFonts.inter(fontSize: 32, fontWeight: FontWeight.w800, color: AppColors.navy),
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'You and \${widget.matchedUser.name} liked each other!',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.85),
-                          fontSize: 16,
+                        'You and ${widget.matchedUser.name} both want to be roommates',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(fontSize: 16, color: AppColors.textSoft),
+                      ),
+                      const SizedBox(height: 28),
+                      // Avatar
+                      Container(
+                        width: 120, height: 120,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppColors.terracotta, width: 4),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: widget.matchedUser.photoUrls.isNotEmpty
+                            ? CachedNetworkImage(imageUrl: widget.matchedUser.photoUrls.first, fit: BoxFit.cover)
+                            : Container(
+                                color: AppColors.terracottaSoft,
+                                child: Center(
+                                  child: Text(
+                                    widget.matchedUser.name.isNotEmpty ? widget.matchedUser.name[0] : '?',
+                                    style: GoogleFonts.inter(fontSize: 40, fontWeight: FontWeight.w800, color: AppColors.terracotta),
+                                  ),
+                                ),
+                              ),
+                      ),
+                      const SizedBox(height: 28),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: AppColors.terracottaSoft,
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: Text(
+                          '✨ $_compatibility% compatible',
+                          style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.terracotta),
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 48),
-
-                // Avatar pair
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildAvatar(
-                      widget.currentUser.photoUrls.isNotEmpty
-                          ? widget.currentUser.photoUrls.first
-                          : null,
-                      widget.currentUser.name,
-                    ),
-                    Container(
-                      width: 52,
-                      height: 52,
-                      margin: const EdgeInsets.symmetric(horizontal: -10),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.15),
-                            blurRadius: 8,
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.favorite,
-                        color: AppColors.pass,
-                        size: 28,
-                      ),
-                    ),
-                    _buildAvatar(
-                      widget.matchedUser.photoUrls.isNotEmpty
-                          ? widget.matchedUser.photoUrls.first
-                          : null,
-                      widget.matchedUser.name,
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 52),
-
-                // Actions
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 40),
-                  child: Column(
-                    children: [
+                      const SizedBox(height: 32),
                       SizedBox(
                         width: double.infinity,
-                        height: 54,
                         child: ElevatedButton(
                           onPressed: () {
                             widget.onDismiss();
                             context.push(
-                              '/chat/\${widget.matchId}',
-                              extra: {
-                                'name': widget.matchedUser.name,
-                                'photo': widget.matchedUser.photoUrls.isNotEmpty
-                                    ? widget.matchedUser.photoUrls.first
-                                    : '',
-                              },
+                              '/chat/${widget.matchId}?name=${Uri.encodeComponent(widget.matchedUser.name)}&photo=${Uri.encodeComponent(widget.matchedUser.photoUrls.isNotEmpty ? widget.matchedUser.photoUrls.first : "")}',
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: AppColors.primaryBlue,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            elevation: 0,
+                            backgroundColor: AppColors.terracotta,
+                            padding: const EdgeInsets.symmetric(vertical: 18),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           ),
-                          child: const Text(
-                            'Send a Message',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
+                          child: Text('Send a message 💬', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
                         ),
                       ),
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 12),
                       TextButton(
                         onPressed: widget.onDismiss,
-                        child: Text(
-                          'Keep Swiping',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.8),
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
+                        child: Text('Keep browsing', style: GoogleFonts.inter(fontSize: 15, color: AppColors.textMuted)),
                       ),
                     ],
                   ),
                 ),
-              ],
+              ),
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildAvatar(String? photoUrl, String name) {
-    return Container(
-      width: 130,
-      height: 130,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.white, width: 4),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ClipOval(
-        child: photoUrl != null && photoUrl.isNotEmpty
-            ? Image.network(photoUrl, fit: BoxFit.cover)
-            : Container(
-                color: Colors.white.withValues(alpha: 0.3),
-                child: Center(
-                  child: Text(
-                    name.isNotEmpty ? name[0].toUpperCase() : '?',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 48,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
       ),
     );
   }

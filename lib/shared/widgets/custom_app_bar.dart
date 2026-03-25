@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 
 class RoomrAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final String? title;
-  final Widget? titleWidget;
-  final List<Widget>? actions;
-  final bool showBackButton;
-  final VoidCallback? onBack;
+  final String title;
   final bool useGradientTitle;
+  final List<Widget>? actions;
+  final Widget? leading;
+  final bool showLogo;
 
   const RoomrAppBar({
     super.key,
-    this.title,
-    this.titleWidget,
-    this.actions,
-    this.showBackButton = false,
-    this.onBack,
+    required this.title,
     this.useGradientTitle = false,
+    this.actions,
+    this.leading,
+    this.showLogo = false,
   });
 
   @override
@@ -25,39 +24,32 @@ class RoomrAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.navy,
       elevation: 0,
-      centerTitle: true,
-      automaticallyImplyLeading: false,
-      leading: showBackButton
-          ? IconButton(
-              icon: const Icon(Icons.arrow_back_ios, size: 20),
-              onPressed: onBack ?? () => Navigator.of(context).pop(),
-            )
-          : null,
-      title: titleWidget ??
-          (useGradientTitle
-              ? ShaderMask(
-                  shaderCallback: (bounds) =>
-                      AppColors.primaryGradient.createShader(bounds),
-                  child: Text(
-                    title ?? '',
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                )
-              : Text(title ?? '')),
-      actions: actions,
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(1),
-        child: Container(
-          height: 1,
-          color: AppColors.border,
-        ),
+      leading: leading,
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (showLogo) ...[
+            Container(
+              width: 32, height: 32,
+              decoration: BoxDecoration(color: AppColors.terracotta, borderRadius: BorderRadius.circular(8)),
+              child: const Icon(Icons.home_rounded, color: Colors.white, size: 18),
+            ),
+            const SizedBox(width: 10),
+          ],
+          Text(
+            title,
+            style: GoogleFonts.inter(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+              letterSpacing: -0.03 * 22,
+            ),
+          ),
+        ],
       ),
+      actions: actions,
     );
   }
 }

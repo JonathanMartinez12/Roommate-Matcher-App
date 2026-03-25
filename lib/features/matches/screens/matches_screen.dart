@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:timeago/timeago.dart' as timeago;
 import '../../../core/constants/app_colors.dart';
 import '../../../models/match_model.dart';
 import '../../../models/user_model.dart';
@@ -19,52 +19,43 @@ class MatchesScreen extends ConsumerWidget {
     final currentUserId = ref.watch(authStateProvider).valueOrNull?.uid ?? '';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FF),
-      appBar: const RoomrAppBar(
-        title: 'Matches',
-        useGradientTitle: true,
-      ),
+      backgroundColor: AppColors.bg,
+      appBar: const RoomrAppBar(title: 'Matches'),
       body: matchesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.terracotta)),
         error: (e, _) => Center(child: Text('Error: $e')),
         data: (matches) {
           if (matches.isEmpty) return _buildEmptyState();
-          return _buildMatchesGrid(context, ref, matches, currentUserId);
+          return _buildContent(context, ref, matches, currentUserId);
         },
       ),
     );
   }
 
-  Widget _buildMatchesGrid(
-    BuildContext context,
-    WidgetRef ref,
-    List<MatchModel> matches,
-    String currentUserId,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '${matches.length} ${matches.length == 1 ? 'Match' : 'Matches'}',
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
+  Widget _buildContent(BuildContext context, WidgetRef ref, List<MatchModel> matches, String currentUserId) {
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Your matches 💜',
+                  style: GoogleFonts.inter(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.navy)),
+                const SizedBox(height: 6),
+                Text('People who are also interested in rooming with you',
+                  style: GoogleFonts.inter(fontSize: 15, color: AppColors.textSoft)),
+                const SizedBox(height: 20),
+              ],
             ),
           ),
-          const SizedBox(height: 12),
-          Expanded(
-            child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 0.75,
-              ),
-              itemCount: matches.length,
-              itemBuilder: (ctx, i) {
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          sliver: SliverGrid(
+            delegate: SliverChildBuilderDelegate(
+              (ctx, i) {
                 final match = matches[i];
                 final otherUserId = match.otherUserId(currentUserId);
                 return _MatchCard(
@@ -76,10 +67,18 @@ class MatchesScreen extends ConsumerWidget {
                   ),
                 );
               },
+              childCount: matches.length,
+            ),
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 220,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              childAspectRatio: 0.75,
             ),
           ),
-        ],
-      ),
+        ),
+        const SliverToBoxAdapter(child: SizedBox(height: 24)),
+      ],
     );
   }
 
@@ -89,63 +88,33 @@ class MatchesScreen extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              color: AppColors.primaryPurple.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.favorite_outline,
-              size: 52,
-              color: AppColors.primaryPurple,
-            ),
+            width: 100, height: 100,
+            decoration: const BoxDecoration(color: AppColors.terracottaSoft, shape: BoxShape.circle),
+            child: const Icon(Icons.favorite_outline, size: 52, color: AppColors.terracotta),
           ),
           const SizedBox(height: 20),
-          const Text(
-            'No matches yet',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
-          ),
+          Text('No matches yet', style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.navy)),
           const SizedBox(height: 8),
-          const Text(
-            'Keep swiping to find your\nperfect roommate',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 15),
-          ),
+          Text('Keep swiping to find your roommate!', style: GoogleFonts.inter(fontSize: 15, color: AppColors.textMuted)),
         ],
       ),
     );
   }
 }
 
-class _MatchCard extends ConsumerWidget {
+class _MatchCard extends StatelessWidget {
   final MatchModel match;
   final String otherUserId;
   final WidgetRef ref;
   final void Function(UserModel) onTap;
 
-  const _MatchCard({
-    required this.match,
-    required this.otherUserId,
-    required this.ref,
-    required this.onTap,
-  });
+  const _MatchCard({required this.match, required this.otherUserId, required this.ref, required this.onTap});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final userAsync = ref.watch(matchUserProvider(otherUserId));
-
     return userAsync.when(
-      loading: () => Container(
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
-          borderRadius: BorderRadius.circular(16),
-        ),
-      ),
+      loading: () => const _SkeletonCard(),
       error: (_, __) => const SizedBox.shrink(),
       data: (user) {
         if (user == null) return const SizedBox.shrink();
@@ -153,120 +122,61 @@ class _MatchCard extends ConsumerWidget {
           onTap: () => onTap(user),
           child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 12, offset: const Offset(0, 2))],
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: user.photoUrls.isNotEmpty
+                      ? CachedNetworkImage(imageUrl: user.photoUrls.first, fit: BoxFit.cover)
+                      : Container(
+                          color: AppColors.terracottaSoft,
+                          child: Center(child: Text(
+                            user.name.isNotEmpty ? user.name[0] : '?',
+                            style: GoogleFonts.inter(fontSize: 40, fontWeight: FontWeight.w800, color: AppColors.terracotta),
+                          )),
+                        ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(user.name, style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.navy)),
+                      const SizedBox(height: 4),
+                      Text(user.major, style: GoogleFonts.inter(fontSize: 13, color: AppColors.textMuted)),
+                      const SizedBox(height: 10),
+                      if (match.compatibilityScore > 0)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                          decoration: BoxDecoration(color: AppColors.terracottaSoft, borderRadius: BorderRadius.circular(20)),
+                          child: Text(
+                            '${match.compatibilityScore}% match',
+                            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.terracotta),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  // Photo
-                  user.photoUrls.isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: user.photoUrls.first,
-                          fit: BoxFit.cover,
-                        )
-                      : Container(
-                          color: AppColors.primaryBlue.withValues(alpha: 0.15),
-                          child: Center(
-                            child: Text(
-                              user.name[0].toUpperCase(),
-                              style: const TextStyle(
-                                fontSize: 48,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.primaryBlue,
-                              ),
-                            ),
-                          ),
-                        ),
-
-                  // Gradient
-                  Positioned(
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: 100,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.bottomCenter,
-                          end: Alignment.topCenter,
-                          colors: [
-                            Colors.black.withValues(alpha: 0.8),
-                            Colors.transparent,
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // Info
-                  Positioned(
-                    bottom: 10,
-                    left: 10,
-                    right: 10,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          user.name.split(' ').first,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        if (match.lastMessage != null)
-                          Text(
-                            match.lastMessage!,
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.75),
-                              fontSize: 11,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                      ],
-                    ),
-                  ),
-
-                  // New match badge
-                  if (match.lastMessage == null)
-                    Positioned(
-                      top: 10,
-                      right: 10,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          gradient: AppColors.primaryGradient,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Text(
-                          'NEW',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
             ),
           ),
         );
       },
+    );
+  }
+}
+
+class _SkeletonCard extends StatelessWidget {
+  const _SkeletonCard();
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(color: AppColors.creamLight, borderRadius: BorderRadius.circular(20)),
     );
   }
 }

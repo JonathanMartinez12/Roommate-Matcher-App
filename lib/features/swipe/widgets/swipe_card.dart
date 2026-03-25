@@ -1,19 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../models/user_model.dart';
-import '../../../services/matching_service.dart';
+import '../../../services/matching_service.dart' show MatchingService, tagsFromQuestionnaire;
 
 class SwipeCard extends StatefulWidget {
   final UserModel user;
   final UserModel? currentUser;
   final bool isTop;
+  final VoidCallback? onLike;
+  final VoidCallback? onPass;
 
   const SwipeCard({
     super.key,
     required this.user,
     this.currentUser,
     this.isTop = false,
+    this.onLike,
+    this.onPass,
   });
 
   @override
@@ -37,9 +42,8 @@ class _SwipeCardState extends State<SwipeCard> {
         final width = context.size?.width ?? 300;
         if (details.localPosition.dx > width / 2) {
           setState(() {
-            if (_currentPhotoIndex < widget.user.photoUrls.length - 1) {
+            if (_currentPhotoIndex < widget.user.photoUrls.length - 1)
               _currentPhotoIndex++;
-            }
           });
         } else {
           setState(() {
@@ -48,70 +52,194 @@ class _SwipeCardState extends State<SwipeCard> {
         }
       },
       child: Container(
+        width: double.infinity,
+        constraints: const BoxConstraints(maxWidth: 420),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
+          color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.15),
-              blurRadius: 20,
+              color: AppColors.navy.withValues(alpha: 0.15),
+              blurRadius: 40,
               offset: const Offset(0, 8),
             ),
           ],
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // Photo
-              _buildPhoto(),
-
-              // Photo indicator dots
-              if (widget.user.photoUrls.length > 1)
-                Positioned(
-                  top: 12,
-                  left: 12,
-                  right: 12,
-                  child: _buildPhotoDots(),
-                ),
-
-              // Gradient overlay
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                height: 220,
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                      colors: [
-                        Colors.black.withValues(alpha: 0.85),
-                        Colors.transparent,
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Photo section
+            SizedBox(
+              height: 380,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  _buildPhoto(),
+                  if (widget.user.photoUrls.length > 1)
+                    Positioned(
+                        top: 12, left: 12, right: 12, child: _buildPhotoDots()),
+                  // Gradient overlay
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      height: 200,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [
+                            AppColors.navy.withValues(alpha: 0.9),
+                            Colors.transparent
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Compatibility badge
+                  if (_compatibility > 0)
+                    Positioned(
+                      top: 16,
+                      right: 16,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.15),
+                                blurRadius: 12,
+                                offset: const Offset(0, 2))
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('✨', style: TextStyle(fontSize: 14)),
+                            const SizedBox(width: 6),
+                            Text(
+                              '$_compatibility% match',
+                              style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.terracotta),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  // Name/info overlay
+                  Positioned(
+                    bottom: 20,
+                    left: 24,
+                    right: 24,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '${widget.user.name}, ${widget.user.age}',
+                          style: GoogleFonts.inter(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${widget.user.major} · ${widget.user.university}',
+                          style: GoogleFonts.inter(
+                              fontSize: 15,
+                              color: Colors.white.withValues(alpha: 0.9)),
+                        ),
                       ],
                     ),
                   ),
-                ),
+                ],
               ),
-
-              // Compatibility badge
-              if (_compatibility > 0)
-                Positioned(
-                  top: 16,
-                  right: 16,
-                  child: _buildCompatibilityBadge(),
-                ),
-
-              // User info
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: _buildUserInfo(),
+            ),
+            // Info section
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (widget.user.bio.isNotEmpty) ...[
+                    Text(
+                      widget.user.bio,
+                      style: GoogleFonts.inter(
+                          fontSize: 15, color: AppColors.textSoft, height: 1.6),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  // Tags
+                  if (widget.user.questionnaire != null)
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: tagsFromQuestionnaire(widget.user.questionnaire!, maxTags: 4)
+                          .map((tag) => Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surfaceAlt,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(tag,
+                                    style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        color: AppColors.textSoft)),
+                              ))
+                          .toList(),
+                    ),
+                  const SizedBox(height: 20),
+                  // Action buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: widget.onPass,
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.textSoft,
+                            side: const BorderSide(
+                                color: AppColors.border, width: 1.5),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          child: Text('Pass',
+                              style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w600, fontSize: 14)),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: widget.onLike,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.terracotta,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          child: Text('Connect 💜',
+                              style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                  color: Colors.white)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -120,165 +248,50 @@ class _SwipeCardState extends State<SwipeCard> {
   Widget _buildPhoto() {
     if (widget.user.photoUrls.isEmpty) {
       return Container(
-        color: AppColors.primaryBlue.withValues(alpha: 0.15),
+        color: AppColors.terracottaSoft,
         child: Center(
           child: Text(
-            widget.user.name.isNotEmpty ? widget.user.name[0].toUpperCase() : '?',
-            style: const TextStyle(
-              fontSize: 96,
-              fontWeight: FontWeight.bold,
-              color: AppColors.primaryBlue,
-            ),
+            widget.user.name.isNotEmpty
+                ? widget.user.name[0].toUpperCase()
+                : '?',
+            style: GoogleFonts.inter(
+                fontSize: 80,
+                fontWeight: FontWeight.w800,
+                color: AppColors.terracotta),
           ),
         ),
       );
     }
-
-    final url = widget.user.photoUrls[_currentPhotoIndex];
     return CachedNetworkImage(
-      imageUrl: url,
+      imageUrl: widget.user.photoUrls[_currentPhotoIndex],
       fit: BoxFit.cover,
       placeholder: (_, __) => Container(
-        color: Colors.grey[200],
-        child: const Center(child: CircularProgressIndicator()),
-      ),
+          color: AppColors.creamLight,
+          child: const Center(
+              child: CircularProgressIndicator(color: AppColors.terracotta))),
       errorWidget: (_, __, ___) => Container(
-        color: Colors.grey[200],
-        child: const Icon(Icons.person, size: 80, color: Colors.grey),
-      ),
+          color: AppColors.creamLight,
+          child:
+              const Icon(Icons.person, size: 80, color: AppColors.textLight)),
     );
   }
 
   Widget _buildPhotoDots() {
     return Row(
-      children: List.generate(widget.user.photoUrls.length, (i) {
-        return Expanded(
-          child: Container(
-            height: 3,
-            margin: const EdgeInsets.symmetric(horizontal: 2),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(2),
-              color: i == _currentPhotoIndex
-                  ? Colors.white
-                  : Colors.white.withValues(alpha: 0.4),
-            ),
-          ),
-        );
-      }),
-    );
-  }
-
-  Widget _buildCompatibilityBadge() {
-    final score = _compatibility;
-    final color = score >= 75
-        ? AppColors.like
-        : score >= 50
-            ? Colors.orange
-            : AppColors.pass;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.92),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.bolt, color: color, size: 16),
-          const SizedBox(width: 4),
-          Text(
-            '\$score%',
-            style: TextStyle(
-              color: color,
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildUserInfo() {
-    final compat = _compatibility;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                widget.user.name,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 3),
-                child: Text(
-                  widget.user.age.toString(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w300,
+      children: List.generate(
+          widget.user.photoUrls.length,
+          (i) => Expanded(
+                child: Container(
+                  height: 3,
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(2),
+                    color: i == _currentPhotoIndex
+                        ? Colors.white
+                        : Colors.white.withValues(alpha: 0.4),
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Row(
-            children: [
-              const Icon(Icons.school_outlined, color: Colors.white70, size: 14),
-              const SizedBox(width: 4),
-              Flexible(
-                child: Text(
-                  '\${widget.user.major} • \${widget.user.university}',
-                  style: const TextStyle(color: Colors.white70, fontSize: 13),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          if (widget.user.bio.isNotEmpty) ...[
-            const SizedBox(height: 6),
-            Text(
-              widget.user.bio,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.75),
-                fontSize: 13,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-          if (compat > 0) ...[
-            const SizedBox(height: 10),
-            Text(
-              MatchingService.compatibilityLabel(compat),
-              style: TextStyle(
-                color: compat >= 75 ? AppColors.like : Colors.white70,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ],
-      ),
+              )),
     );
   }
 }

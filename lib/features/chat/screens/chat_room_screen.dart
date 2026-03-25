@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../models/message_model.dart';
@@ -12,12 +13,11 @@ class ChatRoomScreen extends ConsumerStatefulWidget {
   final String matchedUserName;
   final String matchedUserPhoto;
 
-  const ChatRoomScreen({
-    super.key,
-    required this.matchId,
-    required this.matchedUserName,
-    required this.matchedUserPhoto,
-  });
+  const ChatRoomScreen(
+      {super.key,
+      required this.matchId,
+      required this.matchedUserName,
+      required this.matchedUserPhoto});
 
   @override
   ConsumerState<ChatRoomScreen> createState() => _ChatRoomScreenState();
@@ -45,11 +45,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollCtrl.hasClients) {
-        _scrollCtrl.animateTo(
-          _scrollCtrl.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
+        _scrollCtrl.animateTo(_scrollCtrl.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
       }
     });
   }
@@ -58,7 +55,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     final text = _textCtrl.text.trim();
     if (text.isEmpty) return;
     _textCtrl.clear();
-
     await ref
         .read(chatNotifierProvider(widget.matchId).notifier)
         .sendMessage(text);
@@ -68,72 +64,117 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   @override
   Widget build(BuildContext context) {
     final messagesAsync = ref.watch(messagesProvider(widget.matchId));
-    final currentUserId = ref.watch(authStateProvider).valueOrNull?.uid ?? '';
     final isSending = ref.watch(chatNotifierProvider(widget.matchId));
+    final currentUserId = ref.watch(authStateProvider).valueOrNull?.uid ?? '';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FF),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        titleSpacing: 0,
-        leading: const BackButton(),
-        title: Row(
-          children: [
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.15),
-              backgroundImage: widget.matchedUserPhoto.isNotEmpty
-                  ? CachedNetworkImageProvider(widget.matchedUserPhoto)
-                  : null,
-              child: widget.matchedUserPhoto.isEmpty
-                  ? Text(
-                      widget.matchedUserName.isNotEmpty
-                          ? widget.matchedUserName[0].toUpperCase()
-                          : '?',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primaryBlue,
-                        fontSize: 14,
-                      ),
-                    )
-                  : null,
-            ),
-            const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.matchedUserName,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+      backgroundColor: AppColors.surfaceAlt,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: Container(
+          color: Colors.white,
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                          color: AppColors.surfaceAlt,
+                          borderRadius: BorderRadius.circular(10)),
+                      child: const Icon(Icons.arrow_back,
+                          color: AppColors.textSoft, size: 20),
+                    ),
                   ),
-                ),
-                const Text(
-                  'Your roommate match',
-                  style: TextStyle(fontSize: 11, color: AppColors.textHint),
-                ),
-              ],
+                  const SizedBox(width: 12),
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: const BoxDecoration(shape: BoxShape.circle),
+                    clipBehavior: Clip.antiAlias,
+                    child: widget.matchedUserPhoto.isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: widget.matchedUserPhoto,
+                            fit: BoxFit.cover)
+                        : Container(
+                            color: AppColors.terracottaSoft,
+                            child: Center(
+                                child: Text(
+                              widget.matchedUserName.isNotEmpty
+                                  ? widget.matchedUserName[0]
+                                  : '?',
+                              style: GoogleFonts.inter(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.terracotta),
+                            )),
+                          ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(widget.matchedUserName,
+                            style: GoogleFonts.inter(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.navy)),
+                        Row(
+                          children: [
+                            Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(
+                                    color: AppColors.success,
+                                    shape: BoxShape.circle)),
+                            const SizedBox(width: 4),
+                            Text('Online',
+                                style: GoogleFonts.inter(
+                                    fontSize: 12, color: AppColors.success)),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
-        bottom: const PreferredSize(
-          preferredSize: Size.fromHeight(1),
-          child: Divider(height: 1, color: AppColors.border),
+          ),
         ),
       ),
       body: Column(
         children: [
           Expanded(
             child: messagesAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const Center(
+                  child:
+                      CircularProgressIndicator(color: AppColors.terracotta)),
               error: (e, _) => Center(child: Text('Error: $e')),
               data: (messages) {
                 if (messages.isEmpty) return _buildEmptyChat();
                 _scrollToBottom();
-                return _buildMessageList(messages, currentUserId);
+                return ListView.builder(
+                  controller: _scrollCtrl,
+                  padding: const EdgeInsets.all(28),
+                  itemCount: messages.length,
+                  itemBuilder: (ctx, i) {
+                    final msg = messages[i];
+                    final isMe = msg.senderId == currentUserId;
+                    final showTime = i == messages.length - 1 ||
+                        messages[i + 1]
+                                .createdAt
+                                .difference(msg.createdAt)
+                                .inMinutes >
+                            5;
+                    return MessageBubble(
+                        message: msg, isMe: isMe, showTime: showTime);
+                  },
+                );
               },
             ),
           ),
@@ -143,48 +184,23 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     );
   }
 
-  Widget _buildMessageList(List<MessageModel> messages, String currentUserId) {
-    return ListView.builder(
-      controller: _scrollCtrl,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-      itemCount: messages.length,
-      itemBuilder: (ctx, i) {
-        final msg = messages[i];
-        final isMe = msg.senderId == currentUserId;
-        final showTime = i == messages.length - 1 ||
-            messages[i + 1].createdAt.difference(msg.createdAt).inMinutes > 10;
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 3),
-          child: MessageBubble(
-            message: msg,
-            isMe: isMe,
-            showTime: showTime,
-          ),
-        );
-      },
-    );
-  }
-
   Widget _buildEmptyChat() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.waving_hand_rounded, size: 48, color: AppColors.primaryBlue),
+          const Text('👋', style: TextStyle(fontSize: 48)),
           const SizedBox(height: 12),
-          const Text(
-            'Say hello!',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
-          ),
+          Text('Say hello!',
+              style: GoogleFonts.inter(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.navy)),
           const SizedBox(height: 6),
           Text(
-            "You matched with ${widget.matchedUserName}.\nBreak the ice!",
+            'You matched with ${widget.matchedUserName}.\nBreak the ice!',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
+            style: GoogleFonts.inter(color: AppColors.textSoft, fontSize: 14),
           ),
         ],
       ),
@@ -194,63 +210,60 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   Widget _buildInputBar(bool isSending) {
     return Container(
       padding: EdgeInsets.fromLTRB(
-        12,
-        8,
-        12,
-        MediaQuery.of(context).viewInsets.bottom + 12,
-      ),
+          20, 12, 20, MediaQuery.of(context).viewInsets.bottom + 16),
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: AppColors.border)),
+        border: Border(top: BorderSide(color: AppColors.borderLight)),
       ),
       child: Row(
         children: [
           Expanded(
-            child: TextField(
-              controller: _textCtrl,
-              textInputAction: TextInputAction.send,
-              onSubmitted: (_) => _sendMessage(),
-              maxLines: 4,
-              minLines: 1,
-              decoration: InputDecoration(
-                hintText: 'Type a message...',
-                filled: true,
-                fillColor: const Color(0xFFF8F9FF),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
-                  borderSide: BorderSide.none,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.borderLight, width: 2),
+              ),
+              child: TextField(
+                controller: _textCtrl,
+                textInputAction: TextInputAction.send,
+                onSubmitted: (_) => _sendMessage(),
+                maxLines: 4,
+                minLines: 1,
+                style: GoogleFonts.inter(fontSize: 15),
+                decoration: InputDecoration(
+                  hintText: 'Type a message...',
+                  hintStyle: GoogleFonts.inter(
+                      color: AppColors.textMuted, fontSize: 15),
+                  filled: false,
+                  border: InputBorder.none,
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 14),
           GestureDetector(
             onTap: isSending ? null : _sendMessage,
             child: Container(
-              width: 44,
-              height: 44,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
-                gradient: AppColors.primaryGradient,
+                color: AppColors.terracotta,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primaryBlue.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
+                      color: AppColors.terracotta.withValues(alpha: 0.3),
+                      blurRadius: 8)
                 ],
               ),
               child: isSending
                   ? const Padding(
                       padding: EdgeInsets.all(12),
                       child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+                          color: Colors.white, strokeWidth: 2))
+                  : const Icon(Icons.send_rounded,
+                      color: Colors.white, size: 20),
             ),
           ),
         ],
