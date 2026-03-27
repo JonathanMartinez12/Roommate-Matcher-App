@@ -155,8 +155,8 @@ class _QuestionnaireScreenState extends ConsumerState<QuestionnaireScreen> {
         return _buildChoice(
           question: "What's your sleep schedule like?",
           options: const [
-            'Early bird — Up with the sun 🌅',
-            'Night owl — Alive after midnight 🌙',
+            'Early bird — Up with the sun',
+            'Night owl — Alive after midnight',
             'It depends on the day',
           ],
           values: const ['early_bird', 'night_owl', 'flexible'],
@@ -169,7 +169,7 @@ class _QuestionnaireScreenState extends ConsumerState<QuestionnaireScreen> {
         return _buildChoice(
           question: 'How tidy do you keep your space?',
           options: const [
-            'Spotless — I clean daily ✨',
+            'Spotless — I clean daily',
             'Reasonably clean',
             'Organised chaos works for me',
           ],
@@ -187,9 +187,9 @@ class _QuestionnaireScreenState extends ConsumerState<QuestionnaireScreen> {
         return _buildChoice(
           question: 'How do you feel about noise at home?',
           options: const [
-            'Dead quiet — I need to focus 🔇',
+            'Dead quiet — I need to focus',
             'Some background noise is fine',
-            'The louder the better 🎶',
+            'The louder the better',
           ],
           values: const ['1', '3', '5'],
           selected: _noiseTolerance <= 1
@@ -205,9 +205,9 @@ class _QuestionnaireScreenState extends ConsumerState<QuestionnaireScreen> {
         return _buildChoice(
           question: "Where's your favourite study spot?",
           options: const [
-            'Library — Need that quiet focus 📚',
-            'Coffee shops — Vibes matter ☕',
-            'Home — Comfort is key 🏠',
+            'Library — Need that quiet focus',
+            'Coffee shops — Vibes matter',
+            'Home — Comfort is key',
             "Flexible — wherever I end up",
           ],
           values: const ['library', 'cafe', 'at_home', 'flexible'],
@@ -220,9 +220,9 @@ class _QuestionnaireScreenState extends ConsumerState<QuestionnaireScreen> {
         return _buildChoice(
           question: 'How social are you at home?',
           options: const [
-            'Love having friends over! 🎉',
+            'Love having friends over!',
             'Sometimes on weekends',
-            'I prefer quiet nights in 🤫',
+            'I prefer quiet nights in',
           ],
           values: const ['frequently', 'occasionally', 'never'],
           selected: _guestPolicy,
@@ -355,7 +355,7 @@ class _QuestionnaireScreenState extends ConsumerState<QuestionnaireScreen> {
         const SizedBox(height: 14),
         _buildChoice(
           question: '',
-          options: const ['Cool ❄️', 'Moderate 🌤', 'Warm 🔥'],
+          options: const ['Cool', 'Moderate', 'Warm'],
           values: const ['cool', 'moderate', 'warm'],
           selected: _temperaturePreference,
           onSelect: (v) => setState(() => _temperaturePreference = v),
@@ -457,7 +457,7 @@ class _QuestionnaireScreenState extends ConsumerState<QuestionnaireScreen> {
               ),
               child: Row(
                 children: [
-                  Text(opt.emoji, style: const TextStyle(fontSize: 24)),
+                  Icon(opt.icon, size: 24, color: isSelected ? AppColors.terracotta : AppColors.textSoft),
                   const SizedBox(width: 14),
                   Expanded(
                     child: Text(opt.label,

@@ -139,7 +139,8 @@ class _DesktopDashboard extends ConsumerWidget {
             children: [
               Expanded(
                 child: _StatCard(
-                  icon: '👀',
+                  iconData: Icons.visibility_outlined,
+                  iconColor: AppColors.terracotta,
                   value: '${profileViews.total}',
                   label: 'Profile views',
                   subtext: profileViews.thisWeek > 0
@@ -151,7 +152,8 @@ class _DesktopDashboard extends ConsumerWidget {
               const SizedBox(width: 20),
               Expanded(
                 child: _StatCard(
-                  icon: '💜',
+                  iconData: Icons.favorite_outline,
+                  iconColor: const Color(0xFF8B5CF6),
                   value: '$totalMatches',
                   label: 'Total matches',
                   subtext: totalMatches > 0 ? '$totalMatches new!' : null,
@@ -161,7 +163,8 @@ class _DesktopDashboard extends ConsumerWidget {
               const SizedBox(width: 20),
               Expanded(
                 child: _StatCard(
-                  icon: '💬',
+                  iconData: Icons.chat_bubble_outline,
+                  iconColor: const Color(0xFF22C55E),
                   value: '$unreadCount',
                   label: 'Unread messages',
                   subtext: unreadCount > 0 ? '$unreadCount unread' : null,
@@ -171,7 +174,8 @@ class _DesktopDashboard extends ConsumerWidget {
               const SizedBox(width: 20),
               Expanded(
                 child: _StatCard(
-                  icon: '✨',
+                  iconData: Icons.auto_awesome_outlined,
+                  iconColor: const Color(0xFFFBBF24),
                   value: avgCompat > 0 ? '$avgCompat%' : '--',
                   label: 'Avg. compatibility',
                   accentColor: const Color(0x26FBBF24),
@@ -278,7 +282,8 @@ class _MobileDashboard extends ConsumerWidget {
               SizedBox(
                 width: (MediaQuery.of(context).size.width - 52) / 2,
                 child: _StatCard(
-                  icon: '👀',
+                  iconData: Icons.visibility_outlined,
+                  iconColor: AppColors.terracotta,
                   value: '${profileViews.total}',
                   label: 'Profile views',
                   subtext: profileViews.thisWeek > 0
@@ -290,7 +295,8 @@ class _MobileDashboard extends ConsumerWidget {
               SizedBox(
                 width: (MediaQuery.of(context).size.width - 52) / 2,
                 child: _StatCard(
-                  icon: '💜',
+                  iconData: Icons.favorite_outline,
+                  iconColor: const Color(0xFF8B5CF6),
                   value: '$totalMatches',
                   label: 'Total matches',
                   subtext: totalMatches > 0 ? '$totalMatches new!' : null,
@@ -300,7 +306,8 @@ class _MobileDashboard extends ConsumerWidget {
               SizedBox(
                 width: (MediaQuery.of(context).size.width - 52) / 2,
                 child: _StatCard(
-                  icon: '💬',
+                  iconData: Icons.chat_bubble_outline,
+                  iconColor: const Color(0xFF22C55E),
                   value: '$unreadCount',
                   label: 'Unread messages',
                   subtext: unreadCount > 0 ? '$unreadCount unread' : null,
@@ -310,7 +317,8 @@ class _MobileDashboard extends ConsumerWidget {
               SizedBox(
                 width: (MediaQuery.of(context).size.width - 52) / 2,
                 child: _StatCard(
-                  icon: '✨',
+                  iconData: Icons.auto_awesome_outlined,
+                  iconColor: const Color(0xFFFBBF24),
                   value: avgCompat > 0 ? '$avgCompat%' : '--',
                   label: 'Avg. compat.',
                   accentColor: const Color(0x26FBBF24),
@@ -375,7 +383,7 @@ class _DashHeader extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '$_greeting, $firstName 👋',
+          '$_greeting, $firstName',
           style: GoogleFonts.inter(
             fontSize: 32,
             fontWeight: FontWeight.w800,
@@ -395,14 +403,16 @@ class _DashHeader extends StatelessWidget {
 // ── Stat card ──────────────────────────────────────────────────────────────
 class _StatCard extends StatelessWidget {
   const _StatCard({
-    required this.icon,
+    required this.iconData,
+    required this.iconColor,
     required this.value,
     required this.label,
     this.subtext,
     required this.accentColor,
   });
 
-  final String icon;
+  final IconData iconData;
+  final Color iconColor;
   final String value;
   final String label;
   final String? subtext;
@@ -441,7 +451,7 @@ class _StatCard extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(icon, style: const TextStyle(fontSize: 28)),
+              Icon(iconData, size: 28, color: iconColor),
               const SizedBox(height: 12),
               Text(
                 value,
@@ -501,7 +511,7 @@ class _QuickActions extends ConsumerWidget {
           runSpacing: 10,
           children: [
             _ActionChip(
-              label: 'Find roommates ✨',
+              label: 'Find roommates',
               isPrimary: true,
               onTap: () => ref.read(homeTabIndexProvider.notifier).state =
                   kTabDiscover,
@@ -896,7 +906,7 @@ class _CampusBanner extends StatelessWidget {
               left: 20,
               right: 20,
               child: Text(
-                '🎓 5,000+ students have found roommates on Roomr',
+                '5,000+ students have found roommates on Roomr',
                 style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 14,

@@ -182,7 +182,7 @@ class _EditPreferencesScreenState
           // ── Study habits ─────────────────────────────────────────────────
           _sectionHeader('Favorite study spot'),
           _choiceGroup(
-            options: const ['Library 📚', 'Coffee shop ☕', 'Home 🏠', 'Flexible'],
+            options: const ['Library', 'Coffee shop', 'Home', 'Flexible'],
             values: const ['library', 'cafe', 'at_home', 'flexible'],
             selected: _studyHabits,
             onSelect: (v) => setState(() => _studyHabits = v),
@@ -192,7 +192,7 @@ class _EditPreferencesScreenState
           // ── Guest policy ─────────────────────────────────────────────────
           _sectionHeader('Guests & socializing'),
           _choiceGroup(
-            options: const ['Frequently 🎉', 'Occasionally', 'Rarely / Never 🤫'],
+            options: const ['Frequently', 'Occasionally', 'Rarely / Never'],
             values: const ['frequently', 'occasionally', 'never'],
             selected: _guestPolicy,
             onSelect: (v) => setState(() => _guestPolicy = v),
@@ -202,7 +202,7 @@ class _EditPreferencesScreenState
           // ── Temperature ──────────────────────────────────────────────────
           _sectionHeader('Temperature preference'),
           _choiceGroup(
-            options: const ['Cool ❄️', 'Moderate 🌤', 'Warm 🔥'],
+            options: const ['Cool', 'Moderate', 'Warm'],
             values: const ['cool', 'moderate', 'warm'],
             selected: _temperaturePreference,
             onSelect: (v) => setState(() => _temperaturePreference = v),
@@ -268,12 +268,13 @@ class _EditPreferencesScreenState
                 ),
                 child: Row(
                   children: [
-                    Text(opt.emoji,
-                        style: TextStyle(
-                            fontSize: 22,
-                            color: isDisabled
-                                ? AppColors.textLight
-                                : null)),
+                    Icon(opt.icon,
+                        size: 22,
+                        color: isDisabled
+                            ? AppColors.textLight
+                            : isSelected
+                                ? AppColors.terracotta
+                                : AppColors.textSoft),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(opt.label,

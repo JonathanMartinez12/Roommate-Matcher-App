@@ -119,7 +119,7 @@ class _SwipeCardState extends State<SwipeCard> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Text('✨', style: TextStyle(fontSize: 14)),
+                            const Icon(Icons.auto_awesome_outlined, size: 16, color: AppColors.terracotta),
                             const SizedBox(width: 6),
                             Text(
                               '$_compatibility% match',
@@ -227,7 +227,7 @@ class _SwipeCardState extends State<SwipeCard> {
                                 borderRadius: BorderRadius.circular(10)),
                             padding: const EdgeInsets.symmetric(vertical: 14),
                           ),
-                          child: Text('Connect 💜',
+                          child: Text('Connect',
                               style: GoogleFonts.inter(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 14,

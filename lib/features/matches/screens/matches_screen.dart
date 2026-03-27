@@ -41,7 +41,7 @@ class MatchesScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Your matches 💜',
+                Text('Your matches',
                   style: GoogleFonts.inter(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.navy)),
                 const SizedBox(height: 6),
                 Text('People who are also interested in rooming with you',

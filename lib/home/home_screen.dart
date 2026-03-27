@@ -19,7 +19,6 @@ typedef _NavItem = ({
   IconData icon,
   IconData activeIcon,
   String label,
-  String emoji,
 });
 
 const List<_NavItem> _navItems = [
@@ -27,31 +26,26 @@ const List<_NavItem> _navItems = [
     icon: Icons.home_outlined,
     activeIcon: Icons.home_rounded,
     label: 'Home',
-    emoji: '🏠',
   ),
   (
     icon: Icons.explore_outlined,
     activeIcon: Icons.explore,
     label: 'Discover',
-    emoji: '✨',
   ),
   (
     icon: Icons.favorite_outline,
     activeIcon: Icons.favorite,
     label: 'Matches',
-    emoji: '💜',
   ),
   (
     icon: Icons.chat_bubble_outline,
     activeIcon: Icons.chat_bubble,
     label: 'Messages',
-    emoji: '💬',
   ),
   (
     icon: Icons.person_outline,
     activeIcon: Icons.person,
     label: 'Profile',
-    emoji: '👤',
   ),
 ];
 
@@ -225,9 +219,12 @@ class _SideNav extends ConsumerWidget {
                 ),
                 child: Row(
                   children: [
-                    Text(
-                      item.emoji,
-                      style: const TextStyle(fontSize: 18),
+                    Icon(
+                      isActive ? item.activeIcon : item.icon,
+                      size: 20,
+                      color: isActive
+                          ? Colors.white
+                          : const Color(0xB3FFFFFF),
                     ),
                     const SizedBox(width: 12),
                     Expanded(

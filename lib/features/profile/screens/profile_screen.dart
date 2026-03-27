@@ -156,7 +156,7 @@ class ProfileScreen extends ConsumerWidget {
                           .where((o) => o.key == key)
                           .firstOrNull;
                       final label = opt != null
-                          ? '${opt.emoji} ${opt.label}'
+                          ? opt.label
                           : key;
                       return Container(
                         padding: const EdgeInsets.symmetric(

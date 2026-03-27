@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import '../models/user_model.dart';
 
 // ── Dealbreaker option definitions ────────────────────────────────────────────
@@ -7,15 +8,15 @@ import '../models/user_model.dart';
 // (bidirectionally — if either party has a dealbreaker the other triggers,
 // neither is shown to the other).
 
-typedef DealbreakerOption = ({String key, String label, String emoji});
+typedef DealbreakerOption = ({String key, String label, IconData icon});
 
 const kDealbreakerOptions = <DealbreakerOption>[
-  (key: 'smoking', label: 'No smoking', emoji: '🚭'),
-  (key: 'drinking', label: 'No drinking', emoji: '🍺'),
-  (key: 'pets', label: 'No pets', emoji: '🐾'),
-  (key: 'no_night_owl', label: 'No night owls', emoji: '🌙'),
-  (key: 'no_early_bird', label: 'No early birds', emoji: '🌅'),
-  (key: 'no_guests', label: 'No frequent guests', emoji: '🎉'),
+  (key: 'smoking', label: 'No smoking', icon: Icons.smoke_free),
+  (key: 'drinking', label: 'No drinking', icon: Icons.no_drinks),
+  (key: 'pets', label: 'No pets', icon: Icons.pets),
+  (key: 'no_night_owl', label: 'No night owls', icon: Icons.nightlight_outlined),
+  (key: 'no_early_bird', label: 'No early birds', icon: Icons.wb_sunny_outlined),
+  (key: 'no_guests', label: 'No frequent guests', icon: Icons.group_off_outlined),
 ];
 
 // ── Tag builder ───────────────────────────────────────────────────────────────
@@ -27,32 +28,32 @@ List<String> tagsFromQuestionnaire(Questionnaire q, {int maxTags = 5}) {
   final tags = <String>[];
 
   // Sleep
-  if (q.sleepSchedule == 'early_bird') tags.add('🌅 Early bird');
-  else if (q.sleepSchedule == 'night_owl') tags.add('🌙 Night owl');
-  else tags.add('😴 Flexible sleeper');
+  if (q.sleepSchedule == 'early_bird') tags.add('Early bird');
+  else if (q.sleepSchedule == 'night_owl') tags.add('Night owl');
+  else tags.add('Flexible sleeper');
 
   // Cleanliness
-  if (q.cleanliness >= 5) tags.add('✨ Spotless');
-  else if (q.cleanliness == 4) tags.add('🧹 Very clean');
-  else if (q.cleanliness <= 2) tags.add('😌 Relaxed about mess');
+  if (q.cleanliness >= 5) tags.add('Spotless');
+  else if (q.cleanliness == 4) tags.add('Very clean');
+  else if (q.cleanliness <= 2) tags.add('Relaxed about mess');
 
   // Study
-  if (q.studyHabits == 'library') tags.add('📚 Library studier');
-  else if (q.studyHabits == 'cafe') tags.add('☕ Café studier');
-  else if (q.studyHabits == 'at_home') tags.add('🏠 Studies at home');
+  if (q.studyHabits == 'library') tags.add('Library studier');
+  else if (q.studyHabits == 'cafe') tags.add('Café studier');
+  else if (q.studyHabits == 'at_home') tags.add('Studies at home');
 
   // Guests
-  if (q.guestPolicy == 'frequently') tags.add('🎉 Social butterfly');
-  else if (q.guestPolicy == 'never') tags.add('🤫 Prefers quiet');
+  if (q.guestPolicy == 'frequently') tags.add('Social butterfly');
+  else if (q.guestPolicy == 'never') tags.add('Prefers quiet');
 
   // Lifestyle
-  if (!q.smoking) tags.add('🚭 Non-smoker');
-  if (q.pets) tags.add('🐾 Pet-friendly');
-  if (!q.drinking) tags.add('🥤 Non-drinker');
+  if (!q.smoking) tags.add('Non-smoker');
+  if (q.pets) tags.add('Pet-friendly');
+  if (!q.drinking) tags.add('Non-drinker');
 
   // Temperature
-  if (q.temperaturePreference == 'cool') tags.add('❄️ Likes it cool');
-  else if (q.temperaturePreference == 'warm') tags.add('🔥 Likes it warm');
+  if (q.temperaturePreference == 'cool') tags.add('Likes it cool');
+  else if (q.temperaturePreference == 'warm') tags.add('Likes it warm');
 
   return tags.take(maxTags).toList();
 }
