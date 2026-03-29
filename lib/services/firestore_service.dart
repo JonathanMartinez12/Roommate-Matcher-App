@@ -60,7 +60,12 @@ class FirestoreService {
   Future<void> updateUser(String userId, Map<String, dynamic> data) async {
     await _users.doc(userId).set(data, SetOptions(merge: true));
   }
+  Future<void> updateLastActive(){
 
+  return _users.doc(currentUserId).update({
+    'lastActiveAt': FieldValue.serverTimestamp(),
+  });
+  }
   // ── Potential matches (swipe deck) ────────────────────────────────────────
 
   Future<List<UserModel>> getPotentialMatches({
@@ -78,7 +83,13 @@ class FirestoreService {
       ...excludeIds,
       ...swipedSnap.docs.map((d) => d.id),
     };
+    // Jon Martinez - Optimization: if user has already swiped on someone, we know they're active — no need to update lastActiveAt or re-check dealbreakers until next app open.
+    Future<void> updateLastActive(){
+      return _users.doc(currentUserId).update({
+        'lastActiveAt': FieldValue.serverTimestamp(),
+      });
 
+    }
     // Fetch current user's profile for dealbreaker + reverse filtering
     final meDoc = await _users.doc(currentUserId).get();
     final me = meDoc.exists && meDoc.data() != null

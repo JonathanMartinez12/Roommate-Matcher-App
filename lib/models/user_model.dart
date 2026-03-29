@@ -94,6 +94,7 @@ class UserModel {
   /// Valid values: 'smoking', 'drinking', 'pets',
   ///               'no_night_owl', 'no_early_bird', 'no_guests'
   final List<String> dealbreakers;
+  final DateTime?  lastActiveAt;
 
   const UserModel({
     required this.id,
@@ -108,6 +109,7 @@ class UserModel {
     required this.isProfileComplete,
     required this.createdAt,
     this.dealbreakers = const [],
+    this.lastActiveAt,
   });
 
   factory UserModel.fromMap(Map<String, dynamic> map, String id) {
@@ -126,6 +128,7 @@ class UserModel {
       isProfileComplete: map['isProfileComplete'] ?? false,
       createdAt: _toDateTime(map['createdAt']),
       dealbreakers: List<String>.from(map['dealbreakers'] ?? []),
+      lastActiveAt: map['lastActiveAt'] != null ? _toDateTime(map['lastActiveAt']) : null,
     );
   }
 
@@ -142,6 +145,7 @@ class UserModel {
       'isProfileComplete': isProfileComplete,
       'createdAt': Timestamp.fromDate(createdAt),
       'dealbreakers': dealbreakers,
+      'lastActiveAt': lastActiveAt != null ? Timestamp.fromDate(lastActiveAt!) : null,
     };
   }
 
@@ -157,6 +161,7 @@ class UserModel {
     Questionnaire? questionnaire,
     bool? isProfileComplete,
     DateTime? createdAt,
+    DateTime? lastActiveAt,
     List<String>? dealbreakers,
   }) {
     return UserModel(
@@ -172,6 +177,7 @@ class UserModel {
       isProfileComplete: isProfileComplete ?? this.isProfileComplete,
       createdAt: createdAt ?? this.createdAt,
       dealbreakers: dealbreakers ?? this.dealbreakers,
+      lastActiveAt: lastActiveAt ?? this.lastActiveAt,
     );
   }
 

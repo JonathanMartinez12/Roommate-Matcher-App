@@ -13,6 +13,8 @@ import '../providers/auth_provider.dart';
 import '../providers/matches_provider.dart';
 import 'dashboard_screen.dart';
 import 'home_tab_provider.dart';
+import '../services/firestore_service.dart';
+
 
 // ── Nav item descriptor ────────────────────────────────────────────────────
 typedef _NavItem = ({
@@ -94,7 +96,8 @@ class HomeScreen extends ConsumerWidget {
       if (prev?.id != next?.id) {
         ref.read(homeTabIndexProvider.notifier).state = 0;
       }
-    });
+    }); 
+    ref.read(firestoreServiceProvider).updateLastActive();
 
     final currentTab = ref.watch(homeTabIndexProvider);
     final isDesktop = MediaQuery.of(context).size.width >= 800;
