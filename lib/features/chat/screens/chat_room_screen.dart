@@ -189,7 +189,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text('👋', style: TextStyle(fontSize: 48)),
+          const Icon(Icons.waving_hand_outlined, size: 48, color: AppColors.terracotta),
           const SizedBox(height: 12),
           Text('Say hello!',
               style: GoogleFonts.inter(

@@ -76,7 +76,7 @@ class _MatchPopupState extends State<MatchPopup> with SingleTickerProviderStateM
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text('🎉', style: TextStyle(fontSize: 60)),
+                      const Icon(Icons.celebration_outlined, size: 60, color: AppColors.terracotta),
                       const SizedBox(height: 20),
                       Text(
                         "It's a match!",
@@ -117,7 +117,7 @@ class _MatchPopupState extends State<MatchPopup> with SingleTickerProviderStateM
                           borderRadius: BorderRadius.circular(30),
                         ),
                         child: Text(
-                          '✨ $_compatibility% compatible',
+                          '$_compatibility% compatible',
                           style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.terracotta),
                         ),
                       ),
@@ -136,7 +136,7 @@ class _MatchPopupState extends State<MatchPopup> with SingleTickerProviderStateM
                             padding: const EdgeInsets.symmetric(vertical: 18),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           ),
-                          child: Text('Send a message 💬', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
+                          child: Text('Send a message', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
                         ),
                       ),
                       const SizedBox(height: 12),

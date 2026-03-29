@@ -21,7 +21,7 @@ class ChatListScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.bg,
-      appBar: const RoomrAppBar(title: 'Messages 💬', showLogo: true),
+      appBar: const RoomrAppBar(title: 'Messages', showLogo: true),
       body: matchesAsync.when(
         loading: () => const Center(
             child: CircularProgressIndicator(color: AppColors.terracotta)),
