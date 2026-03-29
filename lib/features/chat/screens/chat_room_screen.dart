@@ -7,6 +7,8 @@ import '../../../models/message_model.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/chat_provider.dart';
 import '../widgets/message_bubble.dart';
+import '../../../providers/matches_provider.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class ChatRoomScreen extends ConsumerStatefulWidget {
   final String matchId;
@@ -124,20 +126,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                 fontSize: 17,
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.navy)),
-                        Row(
-                          children: [
-                            Container(
-                                width: 8,
-                                height: 8,
-                                decoration: const BoxDecoration(
-                                    color: AppColors.success,
-                                    shape: BoxShape.circle)),
-                            const SizedBox(width: 4),
-                            Text('Online',
-                                style: GoogleFonts.inter(
-                                    fontSize: 12, color: AppColors.success)),
-                          ],
-                        ),
+Text('Online',
+    style: GoogleFonts.inter(
+        fontSize: 12, color: AppColors.textMuted)),
+                      
                       ],
                     ),
                   ),
