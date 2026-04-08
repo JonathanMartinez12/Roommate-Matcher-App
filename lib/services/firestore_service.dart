@@ -83,14 +83,7 @@ class FirestoreService {
       ...excludeIds,
       ...swipedSnap.docs.map((d) => d.id),
     };
-    // Jon Martinez - Optimization: if user has already swiped on someone, we know they're active — no need to update lastActiveAt or re-check dealbreakers until next app open.
-    Future<void> updateLastActive(){
-      return _users.doc(currentUserId).update({
-        'lastActiveAt': FieldValue.serverTimestamp(),
-      });
-
-    }
-    // Fetch current user's profile for dealbreaker + reverse filtering
+    // Fetch current user's profile for dealbreaker filtering
     final meDoc = await _users.doc(currentUserId).get();
     final me = meDoc.exists && meDoc.data() != null
         ? UserModel.fromMap(meDoc.data()!, currentUserId)
