@@ -102,12 +102,18 @@ class FirestoreService {
       debugPrint('[SwipeDeck] excluding ${exclude.length} id(s): $exclude');
     }
 
-    final snap = await _users
+    // First try users who completed onboarding; fall back to all users if none
+    var snap = await _users
         .where('isProfileComplete', isEqualTo: true)
         .get();
 
+    if (snap.docs.where((doc) => !exclude.contains(doc.id)).isEmpty) {
+      if (kDebugMode) debugPrint('[SwipeDeck] no complete profiles outside exclusion set — falling back to all users');
+      snap = await _users.get();
+    }
+
     if (kDebugMode) {
-      debugPrint('[SwipeDeck] Firestore returned ${snap.docs.length} complete user(s)');
+      debugPrint('[SwipeDeck] Firestore returned ${snap.docs.length} user(s)');
       for (final d in snap.docs) {
         debugPrint('[SwipeDeck]   uid=${d.id} name=${d.data()['name']}');
       }
@@ -118,12 +124,11 @@ class FirestoreService {
         .map((doc) => UserModel.fromMap(doc.data(), doc.id))
         .where((candidate) {
           if (me == null) return true;
+          // Only apply the current user's own dealbreakers.
+          // Don't filter based on the candidate's dealbreakers — let them
+          // decide for themselves when they see our profile.
           if (MatchingService.violatesDealbreakers(candidate, me.dealbreakers)) {
             if (kDebugMode) debugPrint('[SwipeDeck] filtered ${candidate.name}: violates my dealbreakers');
-            return false;
-          }
-          if (MatchingService.violatesDealbreakers(me, candidate.dealbreakers)) {
-            if (kDebugMode) debugPrint('[SwipeDeck] filtered ${candidate.name}: I violate their dealbreakers');
             return false;
           }
           return true;

@@ -119,7 +119,7 @@ class _SwipeCardState extends State<SwipeCard> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.auto_awesome_outlined, size: 16, color: AppColors.terracotta),
+                            const Icon(Icons.handshake_outlined, size: 16, color: AppColors.terracotta),
                             const SizedBox(width: 6),
                             Text(
                               '$_compatibility% match',

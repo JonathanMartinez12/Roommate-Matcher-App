@@ -174,7 +174,7 @@ class _DesktopDashboard extends ConsumerWidget {
               const SizedBox(width: 20),
               Expanded(
                 child: _StatCard(
-                  iconData: Icons.auto_awesome_outlined,
+                  iconData: Icons.trending_up,
                   iconColor: const Color(0xFFFBBF24),
                   value: avgCompat > 0 ? '$avgCompat%' : '--',
                   label: 'Avg. compatibility',
@@ -317,7 +317,7 @@ class _MobileDashboard extends ConsumerWidget {
               SizedBox(
                 width: (MediaQuery.of(context).size.width - 52) / 2,
                 child: _StatCard(
-                  iconData: Icons.auto_awesome_outlined,
+                  iconData: Icons.trending_up,
                   iconColor: const Color(0xFFFBBF24),
                   value: avgCompat > 0 ? '$avgCompat%' : '--',
                   label: 'Avg. compat.',
