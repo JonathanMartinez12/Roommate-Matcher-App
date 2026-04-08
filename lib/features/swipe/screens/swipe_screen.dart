@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -6,6 +7,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../models/user_model.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/swipe_provider.dart';
+import '../../../services/seed_service.dart';
 import '../../../shared/widgets/custom_app_bar.dart';
 import '../widgets/swipe_card.dart';
 import '../widgets/match_popup.dart';
@@ -164,6 +166,30 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
     );
   }
 
+  bool _seeding = false;
+
+  Future<void> _seedTestData() async {
+    setState(() => _seeding = true);
+    try {
+      final uid = ref.read(authStateProvider).valueOrNull?.uid ?? '';
+      await SeedService(uid).seedAll();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Test data seeded! Refreshing...')),
+        );
+        ref.read(swipeProvider.notifier).loadProfiles();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Seed error: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _seeding = false);
+    }
+  }
+
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
@@ -196,6 +222,22 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
+            if (kDebugMode) ...[
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                onPressed: _seeding ? null : _seedTestData,
+                icon: _seeding
+                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Icon(Icons.science_outlined),
+                label: Text(_seeding ? 'Seeding...' : 'Seed test data'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.textSoft,
+                  side: const BorderSide(color: AppColors.border),
+                  padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ],
           ],
         ),
       ),

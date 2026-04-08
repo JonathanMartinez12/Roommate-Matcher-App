@@ -42,14 +42,16 @@ class MessageBubble extends StatelessWidget {
                       message.text,
                       style: GoogleFonts.inter(color: isMe ? Colors.white : AppColors.text, fontSize: 15, height: 1.5),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      DateFormat('h:mm a').format(message.createdAt),
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        color: isMe ? Colors.white.withValues(alpha: 0.6) : AppColors.textMuted,
+                    if (showTime) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        DateFormat('h:mm a').format(message.createdAt),
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          color: isMe ? Colors.white.withValues(alpha: 0.6) : AppColors.textMuted,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
