@@ -2,24 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:timeago/timeago.dart' as timeago;
 import '../../../core/constants/app_colors.dart';
-import '../../../models/message_model.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/chat_provider.dart';
-import '../widgets/message_bubble.dart';
 import '../../../providers/matches_provider.dart';
-import 'package:timeago/timeago.dart' as timeago;
+import '../widgets/message_bubble.dart';
 
 class ChatRoomScreen extends ConsumerStatefulWidget {
   final String matchId;
   final String matchedUserName;
   final String matchedUserPhoto;
+  final String matchedUserId;
 
   const ChatRoomScreen(
       {super.key,
       required this.matchId,
       required this.matchedUserName,
-      required this.matchedUserPhoto});
+      required this.matchedUserPhoto,
+      required this.matchedUserId});
 
   @override
   ConsumerState<ChatRoomScreen> createState() => _ChatRoomScreenState();
@@ -126,9 +127,28 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                 fontSize: 17,
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.navy)),
-Text('Online',
-    style: GoogleFonts.inter(
-        fontSize: 12, color: AppColors.textMuted)),
+Builder(builder: (_) {
+  final userAsync = ref.watch(matchUserProvider(widget.matchedUserId));
+  return userAsync.when(
+    loading: () => const SizedBox.shrink(),
+    error: (_, __) => const SizedBox.shrink(),
+    data: (user) {
+      final lastActive = user?.lastActiveAt;
+      final isOnline = lastActive != null &&
+          DateTime.now().difference(lastActive).inMinutes < 5;
+      return Text(
+        isOnline
+            ? 'Online'
+            : lastActive != null
+                ? 'Last seen ${timeago.format(lastActive)}'
+                : 'Offline',
+        style: GoogleFonts.inter(
+            fontSize: 12,
+            color: isOnline ? Colors.green : AppColors.textMuted),
+      );
+    },
+  );
+}),
                       
                       ],
                     ),

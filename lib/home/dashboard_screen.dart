@@ -194,7 +194,7 @@ class _DesktopDashboard extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _QuickActions(),
+                    const _QuickActions(),
                     const SizedBox(height: 32),
                     _RecentMatchesSection(
                       matches: recentMatches,
@@ -229,7 +229,7 @@ class _DesktopDashboard extends ConsumerWidget {
                           ),
                         )),
                     const SizedBox(height: 24),
-                    _CampusBanner(),
+                    const _CampusBanner(),
                   ],
                 ),
               ),
@@ -328,7 +328,7 @@ class _MobileDashboard extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
 
-          _QuickActions(),
+          const _QuickActions(),
           const SizedBox(height: 28),
 
           _RecentMatchesSection(
@@ -678,7 +678,8 @@ class _DashMatchTile extends ConsumerWidget {
         return GestureDetector(
           onTap: () => context.push(
             '/chat/${match.id}?name=${Uri.encodeComponent(user.name)}'
-            '&photo=${Uri.encodeComponent(user.photoUrls.isNotEmpty ? user.photoUrls.first : "")}',
+            '&photo=${Uri.encodeComponent(user.photoUrls.isNotEmpty ? user.photoUrls.first : "")}'
+            '&userId=${user.id}',
           ),
           child: Container(
             decoration: BoxDecoration(

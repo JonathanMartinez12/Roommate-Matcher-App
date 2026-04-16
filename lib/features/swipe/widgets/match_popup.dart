@@ -128,7 +128,7 @@ class _MatchPopupState extends State<MatchPopup> with SingleTickerProviderStateM
                           onPressed: () {
                             widget.onDismiss();
                             context.push(
-                              '/chat/${widget.matchId}?name=${Uri.encodeComponent(widget.matchedUser.name)}&photo=${Uri.encodeComponent(widget.matchedUser.photoUrls.isNotEmpty ? widget.matchedUser.photoUrls.first : "")}',
+                              '/chat/${widget.matchId}?name=${Uri.encodeComponent(widget.matchedUser.name)}&photo=${Uri.encodeComponent(widget.matchedUser.photoUrls.isNotEmpty ? widget.matchedUser.photoUrls.first : "")}&userId=${widget.matchedUser.id}',
                             );
                           },
                           style: ElevatedButton.styleFrom(

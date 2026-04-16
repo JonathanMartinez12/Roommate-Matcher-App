@@ -63,7 +63,7 @@ class MatchesScreen extends ConsumerWidget {
                   otherUserId: otherUserId,
                   ref: ref,
                   onTap: (user) => context.push(
-                    '/chat/${match.id}?name=${Uri.encodeComponent(user.name)}&photo=${Uri.encodeComponent(user.photoUrls.isNotEmpty ? user.photoUrls.first : "")}',
+                    '/chat/${match.id}?name=${Uri.encodeComponent(user.name)}&photo=${Uri.encodeComponent(user.photoUrls.isNotEmpty ? user.photoUrls.first : "")}&userId=${user.id}',
                   ),
                 );
               },

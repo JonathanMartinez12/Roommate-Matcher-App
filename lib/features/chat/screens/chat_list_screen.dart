@@ -46,7 +46,7 @@ class ChatListScreen extends ConsumerWidget {
                       match: withMessages[i],
                       currentUserId: currentUserId,
                       onTap: (user) => context.push(
-                        '/chat/${withMessages[i].id}?name=${Uri.encodeComponent(user.name)}&photo=${Uri.encodeComponent(user.photoUrls.isNotEmpty ? user.photoUrls.first : "")}',
+                        '/chat/${withMessages[i].id}?name=${Uri.encodeComponent(user.name)}&photo=${Uri.encodeComponent(user.photoUrls.isNotEmpty ? user.photoUrls.first : "")}&userId=${user.id}',
                       ),
                     ),
                   ),

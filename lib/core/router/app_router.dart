@@ -130,10 +130,13 @@ final routerProvider = Provider<GoRouter>((ref) {
               state.uri.queryParameters['name'] ?? 'Match';
           final matchedUserPhoto =
               state.uri.queryParameters['photo'] ?? '';
+          final matchedUserId =
+              state.uri.queryParameters['userId'] ?? '';
           return ChatRoomScreen(
             matchId: matchId,
             matchedUserName: matchedUserName,
             matchedUserPhoto: matchedUserPhoto,
+            matchedUserId: matchedUserId,
           );
         },
       ),
