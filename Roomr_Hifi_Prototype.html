@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roomr - Find Your Perfect Roommate</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body, #root { height: 100%; }
+    body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+    
+    button:focus-visible, input:focus-visible, textarea:focus-visible {
+      outline: 3px solid #c3543a;
+      outline-offset: 2px;
+    }
+    
+    input:focus, textarea:focus { border-color: #c3543a !important; }
+    ::placeholder { color: #6b7080; }
+    
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #16192a;
+      color: white;
+      padding: 8px 16px;
+      z-index: 1000;
+      text-decoration: none;
+    }
+    .skip-link:focus { top: 0; }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState } = React;
+
+    // COLORS
+    const c = {
+      navy: '#16192a',
+      navyLight: '#1e2235',
+      navySoft: '#252a40',
+      cream: '#d9ddd9',
+      creamLight: '#e8ebe8',
+      creamDark: '#c8ccc8',
+      terracotta: '#c3543a',
+      terracottaLight: '#d4654b',
+      terracottaSoft: 'rgba(195, 84, 58, 0.15)',
+      white: '#ffffff',
+      bg: '#d9ddd9',
+      surface: '#ffffff',
+      surfaceAlt: '#f4f4f2',
+      border: '#c8ccc8',
+      borderLight: '#e0e3e0',
+      text: '#16192a',
+      textSoft: '#3d4156',
+      textMuted: '#6b7080',
+      textLight: '#9a9fab',
+      success: '#2d8a5f',
+    };
+
+    // IMAGES - Real college student photos & campus life
+    const images = {
+      // Profile photos - diverse college students
+      profiles: [
+        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&crop=face',
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face',
+        'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=400&fit=crop&crop=face',
+        'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&h=400&fit=crop&crop=face',
+        'https://images.unsplash.com/photo-1502685104226-ee32379fefbe?w=400&h=400&fit=crop&crop=face',
+        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop&crop=face',
+        'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face',
+        'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&h=400&fit=crop&crop=face',
+      ],
+      // College life imagery
+      dorm: 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&h=600&fit=crop',
+      studying: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop',
+      campus: 'https://images.unsplash.com/photo-1562774053-701939374585?w=800&h=600&fit=crop',
+      coffee: 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=800&h=600&fit=crop',
+      friends: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&h=600&fit=crop',
+      library: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop',
+      nightOwl: 'https://images.unsplash.com/photo-1489549132488-d00b7eee80f1?w=400&h=300&fit=crop',
+      earlyBird: 'https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=400&h=300&fit=crop',
+      cleanRoom: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&h=300&fit=crop',
+      partyFriends: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=300&fit=crop',
+      quietStudy: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400&h=300&fit=crop',
+      hero: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200&h=800&fit=crop',
+    };
+
+    // COMPONENTS
+    const Button = ({ children, variant = 'primary', onClick, full = true, size = 'md' }) => {
+      const sizes = {
+        sm: { padding: '10px 20px', fontSize: '13px' },
+        md: { padding: '14px 28px', fontSize: '14px' },
+        lg: { padding: '18px 36px', fontSize: '16px' },
+      };
+      const variants = {
+        primary: { background: c.terracotta, color: c.white, border: 'none' },
+        dark: { background: c.navy, color: c.white, border: 'none' },
+        secondary: { background: c.white, color: c.text, border: `1.5px solid ${c.border}` },
+        ghost: { background: 'transparent', color: c.textMuted, border: 'none' },
+        outline: { background: 'transparent', color: c.white, border: '2px solid rgba(255,255,255,0.8)' },
+      };
+      return (
+        <button onClick={onClick} style={{
+          ...sizes[size],
+          ...variants[variant],
+          borderRadius: '10px',
+          fontWeight: '600',
+          cursor: 'pointer',
+          width: full ? '100%' : 'auto',
+          fontFamily: "'Inter', sans-serif",
+          transition: 'all 0.2s ease',
+          transform: 'scale(1)',
+        }}
+        onMouseOver={(e) => e.target.style.transform = 'scale(1.02)'}
+        onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+        >
+          {children}
+        </button>
+      );
+    };
+
+    const Input = ({ label, placeholder, type = 'text', value, id }) => (
+      <div style={{ marginBottom: '18px' }}>
+        {label && (
+          <label htmlFor={id} style={{ 
+            display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: '600',
+            color: c.textSoft, fontFamily: "'Inter', sans-serif",
+          }}>
+            {label}
+          </label>
+        )}
+        <input
+          id={id}
+          type={type}
+          placeholder={placeholder}
+          defaultValue={value}
+          style={{
+            width: '100%', padding: '14px 18px', fontSize: '15px',
+            border: `2px solid ${c.borderLight}`, borderRadius: '10px',
+            fontFamily: "'Inter', sans-serif", boxSizing: 'border-box',
+            background: c.white, color: c.text, transition: 'border-color 0.2s ease',
+          }}
+        />
+      </div>
+    );
+
+    const TextArea = ({ label, placeholder, value, id }) => (
+      <div style={{ marginBottom: '18px' }}>
+        {label && (
+          <label htmlFor={id} style={{ 
+            display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: '600',
+            color: c.textSoft, fontFamily: "'Inter', sans-serif",
+          }}>
+            {label}
+          </label>
+        )}
+        <textarea
+          id={id}
+          placeholder={placeholder}
+          defaultValue={value}
+          rows={4}
+          style={{
+            width: '100%', padding: '14px 18px', fontSize: '15px',
+            border: `2px solid ${c.borderLight}`, borderRadius: '10px',
+            fontFamily: "'Inter', sans-serif", boxSizing: 'border-box',
+            background: c.white, color: c.text, resize: 'none', lineHeight: '1.5',
+          }}
+        />
+      </div>
+    );
+
+    const Avatar = ({ src, size = 48, border }) => (
+      <div style={{
+        width: size, height: size, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
+        border: border || 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+      }}>
+        <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      </div>
+    );
+
+    const Nav = ({ active, onChange, notifications }) => {
+      const items = [
+        { id: 'home', label: 'Home', icon: '🏠' },
+        { id: 'swipe', label: 'Discover', icon: '✨' },
+        { id: 'matches', label: 'Matches', icon: '💜', badge: notifications.matches },
+        { id: 'chat', label: 'Messages', icon: '💬', badge: notifications.messages },
+        { id: 'profile', label: 'Profile', icon: '👤' },
+      ];
+
+      return (
+        <nav style={{
+          width: '260px', minHeight: '100vh', background: c.navy,
+          padding: '28px 18px', display: 'flex', flexDirection: 'column',
+          fontFamily: "'Inter', sans-serif",
+        }}>
+          {/* Logo */}
+          <div style={{ marginBottom: '36px', padding: '0 14px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              width: '42px', height: '42px', borderRadius: '12px',
+              background: c.terracotta, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '22px',
+            }}>🏠</div>
+            <span style={{ fontSize: '26px', fontWeight: '800', color: c.white, letterSpacing: '-0.03em' }}>
+              roomr
+            </span>
+          </div>
+          
+          {/* Nav items */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            {items.map(item => (
+              <button
+                key={item.id}
+                onClick={() => onChange(item.id)}
+                style={{
+                  padding: '14px 18px',
+                  background: active === item.id ? 'rgba(195, 84, 58, 0.2)' : 'transparent',
+                  border: active === item.id ? `1px solid ${c.terracotta}` : '1px solid transparent',
+                  borderRadius: '12px',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  fontSize: '15px',
+                  color: active === item.id ? c.white : 'rgba(255,255,255,0.7)',
+                  fontWeight: active === item.id ? '600' : '500',
+                  fontFamily: "'Inter', sans-serif",
+                  transition: 'all 0.15s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                }}
+              >
+                <span style={{ fontSize: '18px' }}>{item.icon}</span>
+                {item.label}
+                {item.badge > 0 && (
+                  <span style={{
+                    marginLeft: 'auto',
+                    background: c.terracotta, color: c.white,
+                    fontSize: '12px', fontWeight: '700',
+                    padding: '3px 10px', borderRadius: '12px',
+                  }}>
+                    {item.badge}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+          
+          {/* User card at bottom */}
+          <div style={{ marginTop: 'auto', padding: '16px', background: c.navySoft, borderRadius: '14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+              <Avatar src={images.profiles[1]} size={40} />
+              <div>
+                <p style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: c.white }}>Jon</p>
+                <p style={{ margin: 0, fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>LSU · CS '26</p>
+              </div>
+            </div>
+            <button
+              onClick={() => onChange('logout')}
+              style={{
+                width: '100%', padding: '10px',
+                background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px',
+                cursor: 'pointer', fontSize: '13px', color: 'rgba(255,255,255,0.7)',
+                fontFamily: "'Inter', sans-serif",
+              }}
+            >
+              Sign out
+            </button>
+          </div>
+        </nav>
+      );
+    };
+
+    const StatCard = ({ label, value, subtext, icon, color }) => (
+      <div style={{
+        background: c.white, borderRadius: '16px', padding: '24px',
+        flex: 1, minWidth: '200px', position: 'relative', overflow: 'hidden',
+        boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
+      }}>
+        <div style={{
+          position: 'absolute', top: '-10px', right: '-10px',
+          width: '80px', height: '80px', borderRadius: '50%',
+          background: color || c.terracottaSoft, opacity: 0.3,
+        }} />
+        <span style={{ fontSize: '28px', marginBottom: '12px', display: 'block' }}>{icon}</span>
+        <p style={{ fontSize: '32px', fontWeight: '800', color: c.navy, marginBottom: '4px', fontFamily: "'Inter', sans-serif" }}>
+          {value}
+        </p>
+        <p style={{ fontSize: '14px', color: c.textMuted, margin: 0, fontFamily: "'Inter', sans-serif" }}>
+          {label}
+        </p>
+        {subtext && (
+          <p style={{ fontSize: '12px', color: c.terracotta, fontWeight: '600', margin: '4px 0 0 0' }}>
+            {subtext}
+          </p>
+        )}
+      </div>
+    );
+
+    const ProfileCard = ({ name, age, major, university, compatibility, bio, photo, tags, onLike, onPass }) => (
+      <div style={{
+        width: '100%', maxWidth: '400px', borderRadius: '24px', overflow: 'hidden',
+        background: c.white, boxShadow: '0 8px 40px rgba(22, 25, 42, 0.15)',
+      }}>
+        <div style={{ position: 'relative', height: '380px' }}>
+          <img src={photo} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(to top, rgba(22,25,42,0.9) 0%, transparent 50%)',
+          }} />
+          <div style={{
+            position: 'absolute', top: '16px', right: '16px',
+            background: c.white, padding: '8px 16px', borderRadius: '20px',
+            display: 'flex', alignItems: 'center', gap: '6px',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
+          }}>
+            <span style={{ fontSize: '14px' }}>✨</span>
+            <span style={{ fontSize: '14px', fontWeight: '700', color: c.terracotta, fontFamily: "'Inter', sans-serif" }}>
+              {compatibility}% match
+            </span>
+          </div>
+          <div style={{ position: 'absolute', bottom: '20px', left: '24px', right: '24px', color: c.white }}>
+            <h2 style={{ margin: '0 0 4px 0', fontSize: '28px', fontWeight: '700', fontFamily: "'Inter', sans-serif" }}>
+              {name}, {age}
+            </h2>
+            <p style={{ margin: 0, fontSize: '15px', opacity: 0.9, fontFamily: "'Inter', sans-serif" }}>
+              {major} · {university}
+            </p>
+          </div>
+        </div>
+        
+        <div style={{ padding: '24px' }}>
+          <p style={{ margin: '0 0 16px 0', fontSize: '15px', color: c.textSoft, lineHeight: '1.6', fontFamily: "'Inter', sans-serif" }}>
+            {bio}
+          </p>
+          
+          {tags && (
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px' }}>
+              {tags.map((tag, i) => (
+                <span key={i} style={{
+                  background: c.surfaceAlt, padding: '6px 14px', borderRadius: '20px',
+                  fontSize: '13px', color: c.textSoft, fontFamily: "'Inter', sans-serif",
+                }}>
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+          
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <Button variant="secondary" onClick={onPass}>Pass</Button>
+            <Button variant="primary" onClick={onLike}>Connect 💜</Button>
+          </div>
+        </div>
+      </div>
+    );
+
+    const ConversationItem = ({ name, photo, lastMessage, time, unread, onClick }) => (
+      <button onClick={onClick} style={{
+        display: 'flex', alignItems: 'center', gap: '16px',
+        padding: '16px 20px', cursor: 'pointer',
+        background: c.white,
+        border: 'none', borderRadius: '16px', margin: '6px 0',
+        width: '100%', textAlign: 'left',
+        boxShadow: unread ? 'none' : '0 1px 4px rgba(0,0,0,0.04)',
+        transition: 'all 0.15s ease',
+      }}>
+        <Avatar src={photo} size={52} border={'none'} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+            <span style={{ fontSize: '15px', fontWeight: unread ? '700' : '600', color: c.navy, fontFamily: "'Inter', sans-serif" }}>
+              {name}
+            </span>
+            <span style={{ fontSize: '12px', color: c.textMuted, fontFamily: "'Inter', sans-serif" }}>{time}</span>
+          </div>
+          <p style={{ 
+            margin: 0, fontSize: '14px', color: c.textSoft, fontFamily: "'Inter', sans-serif",
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}>
+            {lastMessage}
+          </p>
+        </div>
+        {unread && <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: c.terracotta }} />}
+      </button>
+    );
+
+    const Message = ({ text, time, isMine }) => (
+      <div style={{ display: 'flex', justifyContent: isMine ? 'flex-end' : 'flex-start', marginBottom: '14px' }}>
+        <div style={{
+          maxWidth: '70%', padding: '14px 18px',
+          borderRadius: isMine ? '20px 20px 4px 20px' : '20px 20px 20px 4px',
+          background: isMine ? c.navy : c.white,
+          color: isMine ? c.white : c.text,
+          boxShadow: isMine ? 'none' : '0 2px 8px rgba(0,0,0,0.06)',
+        }}>
+          <p style={{ margin: 0, fontSize: '15px', lineHeight: '1.5', fontFamily: "'Inter', sans-serif" }}>{text}</p>
+          <span style={{ fontSize: '11px', opacity: 0.6, display: 'block', marginTop: '8px', textAlign: 'right' }}>
+            {time}
+          </span>
+        </div>
+      </div>
+    );
+
+    const QuizOption = ({ label, image, selected, onClick }) => (
+      <button onClick={onClick} style={{
+        width: '100%', padding: '0', borderRadius: '16px', overflow: 'hidden',
+        border: selected ? `3px solid ${c.terracotta}` : `2px solid ${c.borderLight}`,
+        background: c.white, textAlign: 'left', cursor: 'pointer', marginBottom: '14px',
+        transition: 'all 0.2s ease', transform: selected ? 'scale(1.02)' : 'scale(1)',
+      }}>
+        {image && (
+          <div style={{ height: '100px', overflow: 'hidden' }}>
+            <img src={image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          </div>
+        )}
+        <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ 
+            fontSize: '15px', fontWeight: selected ? '600' : '500',
+            color: selected ? c.terracotta : c.text, fontFamily: "'Inter', sans-serif",
+          }}>
+            {label}
+          </span>
+          {selected && <span style={{ color: c.terracotta, fontSize: '18px', fontWeight: '700' }}>✓</span>}
+        </div>
+      </button>
+    );
+
+    const Progress = ({ current, total }) => (
+      <div style={{ marginBottom: '32px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+          <span style={{ fontSize: '14px', color: c.textMuted, fontFamily: "'Inter', sans-serif" }}>
+            Question {current} of {total}
+          </span>
+          <span style={{ fontSize: '14px', color: c.terracotta, fontWeight: '700', fontFamily: "'Inter', sans-serif" }}>
+            {Math.round((current / total) * 100)}%
+          </span>
+        </div>
+        <div style={{ width: '100%', height: '10px', background: c.creamDark, borderRadius: '5px' }}>
+          <div style={{
+            width: `${(current / total) * 100}%`, height: '100%',
+            background: `linear-gradient(90deg, ${c.terracotta} 0%, ${c.terracottaLight} 100%)`,
+            borderRadius: '5px', transition: 'width 0.3s ease',
+          }} />
+        </div>
+      </div>
+    );
+
+    const MatchPopup = ({ name, photo, compatibility, onMessage, onKeepSwiping }) => (
+      <div style={{
+        position: 'fixed', inset: 0,
+        background: 'rgba(22, 25, 42, 0.9)', backdropFilter: 'blur(12px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100,
+      }}>
+        <div style={{
+          background: c.white, borderRadius: '28px', padding: '48px',
+          textAlign: 'center', maxWidth: '420px', width: '90%',
+        }}>
+          <div style={{ fontSize: '60px', marginBottom: '20px', animation: 'float 2s ease-in-out infinite' }}>🎉</div>
+          
+          <h2 style={{ margin: '0 0 8px 0', fontSize: '32px', fontWeight: '800', color: c.navy, fontFamily: "'Inter', sans-serif" }}>
+            It's a match!
+          </h2>
+          <p style={{ margin: '0 0 28px 0', color: c.textSoft, fontSize: '16px', fontFamily: "'Inter', sans-serif" }}>
+            You and {name} both want to be roommates
+          </p>
+          
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '28px' }}>
+            <Avatar src={photo} size={120} border={`4px solid ${c.terracotta}`} />
+          </div>
+          
+          <p style={{
+            background: c.terracottaSoft, padding: '12px 24px', borderRadius: '30px',
+            display: 'inline-block', margin: '0 0 32px 0',
+            fontSize: '15px', fontWeight: '700', color: c.terracotta, fontFamily: "'Inter', sans-serif",
+          }}>
+            ✨ {compatibility}% compatible
+          </p>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <Button variant="primary" size="lg" onClick={onMessage}>Send a message 💬</Button>
+            <Button variant="ghost" onClick={onKeepSwiping}>Keep browsing</Button>
+          </div>
+        </div>
+      </div>
+    );
+
+    const MatchTile = ({ name, major, compatibility, photo, onClick }) => (
+      <button onClick={onClick} style={{
+        background: c.white, borderRadius: '20px', padding: '0', overflow: 'hidden',
+        cursor: 'pointer', border: 'none', textAlign: 'center', width: '100%',
+        boxShadow: '0 2px 12px rgba(0,0,0,0.06)', transition: 'all 0.2s ease',
+      }}
+      onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
+      onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+      >
+        <div style={{ height: '140px', overflow: 'hidden' }}>
+          <img src={photo} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        </div>
+        <div style={{ padding: '18px' }}>
+          <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '600', color: c.navy, fontFamily: "'Inter', sans-serif" }}>{name}</h3>
+          <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: c.textMuted, fontFamily: "'Inter', sans-serif" }}>{major}</p>
+          <span style={{ 
+            fontSize: '13px', fontWeight: '700', color: c.terracotta,
+            background: c.terracottaSoft, padding: '6px 14px', borderRadius: '20px',
+          }}>
+            {compatibility}% match
+          </span>
+        </div>
+      </button>
+    );
+
+    const TipCard = ({ title, description, image }) => (
+      <div style={{
+        background: c.white, borderRadius: '20px', overflow: 'hidden',
+        boxShadow: '0 2px 12px rgba(0,0,0,0.06)', display: 'flex', alignItems: 'stretch',
+      }}>
+        <div style={{ width: '120px', height: '120px', flexShrink: 0 }}>
+          <img src={image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        </div>
+        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <h4 style={{ margin: '0 0 6px 0', fontSize: '15px', fontWeight: '600', color: c.navy, fontFamily: "'Inter', sans-serif" }}>{title}</h4>
+          <p style={{ margin: 0, fontSize: '13px', color: c.textMuted, lineHeight: '1.4', fontFamily: "'Inter', sans-serif" }}>{description}</p>
+        </div>
+      </div>
+    );
+
+
+    // MAIN APP
+    function App() {
+      const [screen, setScreen] = useState('splash');
+      const [tab, setTab] = useState('home');
+      const [showMatch, setShowMatch] = useState(false);
+      const [quizStep, setQuizStep] = useState(1);
+      const [answers, setAnswers] = useState({});
+      const [profileIndex, setProfileIndex] = useState(0);
+      const [chatWith, setChatWith] = useState(null);
+
+      const notifications = { matches: 2, messages: 3 };
+
+      const profiles = [
+        { 
+          name: 'Sarah', age: 19, major: 'Biology', university: 'LSU', compatibility: 87, 
+          bio: "Pre-med student who loves hiking on weekends. Looking for someone chill who doesn't mind study sessions at home. I keep things clean and organized! 📚",
+          photo: images.profiles[0],
+          tags: ['🌅 Early bird', '📖 Study buddy', '🧹 Clean freak'],
+        },
+        { 
+          name: 'Emma', age: 20, major: 'Computer Science', university: 'LSU', compatibility: 92,
+          bio: "Night owl but I always use headphones! Clean, respectful, and always down for late-night coffee runs. Let's binge some Netflix together 🎬",
+          photo: images.profiles[2],
+          tags: ['🌙 Night owl', '💻 Gamer', '☕ Coffee addict'],
+        },
+        { 
+          name: 'Jessica', age: 21, major: 'Psychology', university: 'LSU', compatibility: 89,
+          bio: "Psych major who loves deep conversations and good music. Looking for a roommate who respects quiet time but also knows how to have fun! 🎵",
+          photo: images.profiles[3],
+          tags: ['🎵 Music lover', '📚 Bookworm', '🧘 Wellness'],
+        },
+      ];
+
+      const conversations = [
+        { id: 1, name: 'Sarah', photo: images.profiles[0], lastMessage: "That would be great! Library tomorrow?", time: '2:36 PM', unread: true },
+        { id: 2, name: 'Emma', photo: images.profiles[2], lastMessage: "I'm so excited we matched! 🎉", time: '1:20 PM', unread: true },
+        { id: 3, name: 'Jessica', photo: images.profiles[3], lastMessage: "Let me know when you're free to meet up", time: 'Yesterday', unread: true },
+        { id: 4, name: 'Amanda', photo: images.profiles[4], lastMessage: "Sounds good!", time: 'Yesterday', unread: false },
+        { id: 5, name: 'Taylor', photo: images.profiles[5], lastMessage: "Nice to meet you too!", time: '2 days ago', unread: false },
+      ];
+
+      const matches = [
+        { name: 'Jessica', major: 'Psychology', compatibility: 89, photo: images.profiles[3] },
+        { name: 'Amanda', major: 'Engineering', compatibility: 85, photo: images.profiles[4] },
+        { name: 'Taylor', major: 'Business', compatibility: 82, photo: images.profiles[5] },
+        { name: 'Morgan', major: 'Art History', compatibility: 78, photo: images.profiles[6] },
+        { name: 'Riley', major: 'Chemistry', compatibility: 75, photo: images.profiles[7] },
+        { name: 'Jordan', major: 'English', compatibility: 73, photo: images.profiles[0] },
+      ];
+
+      const messages = [
+        { text: "Hey! I saw we're both Bio majors 🧬", time: '2:30 PM', isMine: false },
+        { text: "Yes! Are you in Dr. Smith's class?", time: '2:32 PM', isMine: true },
+        { text: "I am! Are you looking for a roommate next semester?", time: '2:33 PM', isMine: false },
+        { text: "Yeah! Need someone okay with study sessions at home", time: '2:35 PM', isMine: true },
+        { text: "That would be great! Library tomorrow? ☕", time: '2:36 PM', isMine: false },
+      ];
+
+      const questions = [
+        { 
+          id: 'sleep', 
+          q: "What's your sleep schedule like?", 
+          opts: [
+            { label: 'Early bird — Up with the sun 🌅', image: images.earlyBird },
+            { label: 'Night owl — Alive after midnight 🌙', image: images.nightOwl },
+            { label: 'It depends on the day', image: null },
+          ]
+        },
+        { 
+          id: 'clean', 
+          q: "How tidy do you keep your space?", 
+          opts: [
+            { label: 'Spotless — I clean daily ✨', image: images.cleanRoom },
+            { label: 'Reasonably clean', image: null },
+            { label: 'Organized chaos works for me', image: null },
+          ]
+        },
+        { 
+          id: 'study', 
+          q: "Where's your favorite study spot?", 
+          opts: [
+            { label: 'Library — Need that quiet focus 📚', image: images.quietStudy },
+            { label: 'Coffee shops — Vibes matter ☕', image: images.coffee },
+            { label: 'Home — Comfort is key 🏠', image: null },
+          ]
+        },
+        { 
+          id: 'social', 
+          q: "How social are you?", 
+          opts: [
+            { label: 'Love having friends over! 🎉', image: images.partyFriends },
+            { label: 'Sometimes on weekends', image: null },
+            { label: 'I prefer quiet nights in', image: null },
+          ]
+        },
+        { 
+          id: 'vibe', 
+          q: "What's your ideal roommate vibe?", 
+          opts: [
+            { label: 'Best friends who do everything together', image: images.friends },
+            { label: 'Friendly but independent', image: null },
+            { label: 'Respectful coexistence', image: null },
+          ]
+        },
+      ];
+
+      const tips = [
+        { title: 'Complete your profile', description: 'Profiles with photos get 3x more matches!', image: images.dorm },
+        { title: 'Be specific in your bio', description: 'Mention hobbies, study habits, and deal breakers.', image: images.studying },
+        { title: 'Start conversations', description: "Don't wait — send a message to your matches!", image: images.coffee },
+      ];
+
+      const getGreeting = () => {
+        const hour = new Date().getHours();
+        if (hour < 12) return 'Good morning';
+        if (hour < 18) return 'Good afternoon';
+        return 'Good evening';
+      };
+
+      // SCREENS
+      const Splash = () => (
+        <div 
+          onClick={() => setScreen('login')}
+          style={{
+            minHeight: '100vh', cursor: 'pointer',
+            background: `linear-gradient(135deg, ${c.navy} 0%, #2a2d45 100%)`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            position: 'relative', overflow: 'hidden',
+          }}
+        >
+          {/* Background image */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            backgroundImage: `url(${images.hero})`,
+            backgroundSize: 'cover', backgroundPosition: 'center',
+            opacity: 0.15,
+          }} />
+          
+          {/* Content */}
+          <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', padding: '40px' }}>
+            <div style={{
+              width: '80px', height: '80px', borderRadius: '24px',
+              background: c.terracotta, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 24px', fontSize: '40px',
+              boxShadow: '0 8px 32px rgba(195, 84, 58, 0.4)',
+            }}>
+              🏠
+            </div>
+            
+            <h1 style={{ 
+              fontSize: '64px', fontWeight: '800', color: c.white, 
+              letterSpacing: '-0.04em', margin: '0 0 16px 0', fontFamily: "'Inter', sans-serif",
+            }}>
+              roomr
+            </h1>
+            <p style={{ 
+              color: 'rgba(255,255,255,0.8)', fontSize: '22px', margin: '0 0 8px 0',
+              fontFamily: "'Inter', sans-serif", fontWeight: '500',
+            }}>
+              Find your perfect roommate
+            </p>
+            <p style={{ 
+              color: c.terracottaLight, fontSize: '16px', margin: '0 0 48px 0',
+              fontFamily: "'Inter', sans-serif",
+            }}>
+              Join 5,000+ college students
+            </p>
+            
+            <div style={{ 
+              display: 'inline-flex', alignItems: 'center', gap: '12px',
+              background: 'rgba(255,255,255,0.1)', padding: '16px 32px', borderRadius: '40px',
+              animation: 'pulse 2s ease-in-out infinite',
+            }}>
+              <span style={{ color: c.white, fontSize: '15px', fontFamily: "'Inter', sans-serif" }}>
+                Click anywhere to get started
+              </span>
+              <span style={{ fontSize: '20px' }}>→</span>
+            </div>
+          </div>
+        </div>
+      );
+
+      const Login = () => (
+        <div style={{
+          minHeight: '100vh', display: 'flex',
+          background: c.bg, fontFamily: "'Inter', sans-serif",
+        }}>
+          {/* Left - Image */}
+          <div style={{
+            flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: `linear-gradient(135deg, ${c.navy} 0%, #2a2d45 100%)`,
+          }}>
+            <div style={{
+              position: 'absolute', inset: 0,
+              backgroundImage: `url(${images.friends})`,
+              backgroundSize: 'cover', backgroundPosition: 'center',
+              opacity: 0.3,
+            }} />
+            <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', padding: '60px' }}>
+              <h2 style={{ fontSize: '42px', fontWeight: '800', color: c.white, margin: '0 0 16px 0', lineHeight: '1.2' }}>
+                Your perfect roommate is waiting
+              </h2>
+              <p style={{ fontSize: '18px', color: 'rgba(255,255,255,0.8)', margin: 0, lineHeight: '1.6' }}>
+                Join thousands of students finding compatible roommates based on lifestyle, habits, and personality.
+              </p>
+            </div>
+          </div>
+          
+          {/* Right - Form */}
+          <div style={{ width: '500px', padding: '60px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '48px' }}>
+              <div style={{
+                width: '48px', height: '48px', borderRadius: '14px',
+                background: c.terracotta, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '24px',
+              }}>🏠</div>
+              <span style={{ fontSize: '28px', fontWeight: '800', color: c.navy }}>roomr</span>
+            </div>
+            
+            <h1 style={{ margin: '0 0 8px 0', fontSize: '32px', fontWeight: '700', color: c.navy }}>
+              Welcome back
+            </h1>
+            <p style={{ margin: '0 0 36px 0', color: c.textSoft, fontSize: '16px' }}>
+              Sign in to continue your roommate search
+            </p>
+            
+            <Input label="Email" placeholder="you@university.edu" id="login-email" />
+            <Input label="Password" placeholder="Password" type="password" id="login-pass" />
+            
+            <Button variant="dark" size="lg" onClick={() => { setTab('home'); setScreen('home'); }}>
+              Sign in
+            </Button>
+            
+            <p style={{ textAlign: 'center', color: c.textMuted, marginTop: '28px', fontSize: '15px' }}>
+              Don't have an account?{' '}
+              <button onClick={() => setScreen('register')} style={{ 
+                color: c.terracotta, cursor: 'pointer', fontWeight: '600',
+                background: 'none', border: 'none', fontSize: '15px', fontFamily: "'Inter', sans-serif",
+              }}>
+                Sign up free
+              </button>
+            </p>
+          </div>
+        </div>
+      );
+
+      const Register = () => (
+        <div style={{
+          minHeight: '100vh', display: 'flex',
+          background: c.bg, fontFamily: "'Inter', sans-serif",
+        }}>
+          {/* Left - Image */}
+          <div style={{
+            flex: 1, position: 'relative',
+            background: `linear-gradient(135deg, ${c.navy} 0%, #2a2d45 100%)`,
+          }}>
+            <div style={{
+              position: 'absolute', inset: 0,
+              backgroundImage: `url(${images.studying})`,
+              backgroundSize: 'cover', backgroundPosition: 'center',
+              opacity: 0.3,
+            }} />
+            <div style={{ position: 'relative', zIndex: 1, padding: '60px', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <h2 style={{ fontSize: '42px', fontWeight: '800', color: c.white, margin: '0 0 24px 0', lineHeight: '1.2' }}>
+                Find roommates who match your lifestyle
+              </h2>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {['Verified .edu emails only', 'Lifestyle compatibility matching', 'Real students, real connections'].map((item, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{
+                      width: '28px', height: '28px', borderRadius: '50%',
+                      background: c.terracotta, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '14px', color: c.white,
+                    }}>✓</div>
+                    <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '16px' }}>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          {/* Right - Form */}
+          <div style={{ width: '500px', padding: '60px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '48px' }}>
+              <div style={{
+                width: '48px', height: '48px', borderRadius: '14px',
+                background: c.terracotta, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '24px',
+              }}>🏠</div>
+              <span style={{ fontSize: '28px', fontWeight: '800', color: c.navy }}>roomr</span>
+            </div>
+            
+            <h1 style={{ margin: '0 0 8px 0', fontSize: '32px', fontWeight: '700', color: c.navy }}>
+              Create your account
+            </h1>
+            <p style={{ margin: '0 0 36px 0', color: c.textSoft, fontSize: '16px' }}>
+              Join the roommate-finding revolution
+            </p>
+            
+            <Input label="Full name" placeholder="Your name" id="reg-name" />
+            <Input label="University email" placeholder="you@university.edu" id="reg-email" />
+            <Input label="Password" placeholder="Create a password" type="password" id="reg-pass" />
+            
+            <Button variant="dark" size="lg" onClick={() => setScreen('profile-setup')}>
+              Continue
+            </Button>
+            
+            <p style={{ textAlign: 'center', color: c.textMuted, marginTop: '28px', fontSize: '15px' }}>
+              Already have an account?{' '}
+              <button onClick={() => setScreen('login')} style={{ 
+                color: c.terracotta, cursor: 'pointer', fontWeight: '600',
+                background: 'none', border: 'none', fontSize: '15px', fontFamily: "'Inter', sans-serif",
+              }}>
+                Sign in
+              </button>
+            </p>
+          </div>
+        </div>
+      );
+
+      const ProfileSetup = () => (
+        <div style={{
+          minHeight: '100vh', background: c.bg,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '40px', fontFamily: "'Inter', sans-serif",
+        }}>
+          <div style={{
+            background: c.white, borderRadius: '24px', padding: '48px',
+            width: '100%', maxWidth: '500px', boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+          }}>
+            <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>📸</div>
+              <h1 style={{ margin: '0 0 8px 0', fontSize: '28px', fontWeight: '700', color: c.navy }}>
+                Let's set up your profile
+              </h1>
+              <p style={{ margin: 0, color: c.textSoft, fontSize: '15px' }}>
+                Help potential roommates get to know you
+              </p>
+            </div>
+            
+            {/* Photo upload */}
+            <div style={{ marginBottom: '28px' }}>
+              <label style={{ display: 'block', marginBottom: '12px', fontSize: '13px', fontWeight: '600', color: c.textSoft }}>
+                Add photos
+              </label>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button style={{
+                  width: '100px', height: '100px', borderRadius: '16px',
+                  background: c.terracottaSoft, border: `2px dashed ${c.terracotta}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexDirection: 'column', gap: '4px', cursor: 'pointer',
+                  color: c.terracotta, fontSize: '24px',
+                }}>
+                  +
+                  <span style={{ fontSize: '11px', fontWeight: '600' }}>Main</span>
+                </button>
+                {[1,2,3].map(i => (
+                  <button key={i} style={{
+                    width: '70px', height: '70px', borderRadius: '12px', alignSelf: 'flex-end',
+                    background: c.surfaceAlt, border: `2px dashed ${c.border}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', color: c.textMuted, fontSize: '20px',
+                  }}>+</button>
+                ))}
+              </div>
+            </div>
+            
+            <Input label="University" placeholder="Louisiana State University" id="setup-uni" />
+            <Input label="Major" placeholder="Computer Science" id="setup-major" />
+            <Input label="Graduation year" placeholder="2026" id="setup-year" />
+            <TextArea label="Tell us about yourself" placeholder="What are your hobbies? What's your ideal roommate like?" id="setup-bio" />
+            
+            <Button variant="dark" size="lg" onClick={() => { setQuizStep(1); setScreen('quiz'); }}>
+              Continue to lifestyle quiz →
+            </Button>
+          </div>
+        </div>
+      );
+
+      const Quiz = () => {
+        const q = questions[quizStep - 1];
+        return (
+          <div style={{
+            minHeight: '100vh', background: c.bg,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '40px', fontFamily: "'Inter', sans-serif",
+          }}>
+            <div style={{
+              background: c.white, borderRadius: '24px', padding: '48px',
+              width: '100%', maxWidth: '560px', boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+            }}>
+              <Progress current={quizStep} total={questions.length} />
+              
+              <h2 style={{ margin: '0 0 28px 0', fontSize: '24px', fontWeight: '700', color: c.navy, textAlign: 'center' }}>
+                {q.q}
+              </h2>
+              
+              {q.opts.map((opt, i) => (
+                <QuizOption 
+                  key={i}
+                  label={opt.label}
+                  image={opt.image}
+                  selected={answers[q.id] === opt.label}
+                  onClick={() => setAnswers({...answers, [q.id]: opt.label})}
+                />
+              ))}
+              
+              <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
+                <Button variant="secondary" onClick={() => quizStep > 1 ? setQuizStep(quizStep - 1) : setScreen('profile-setup')}>
+                  Back
+                </Button>
+                <Button variant="dark" onClick={() => { if (quizStep < questions.length) { setQuizStep(quizStep + 1); } else { setTab('home'); setScreen('home'); } }}>
+                  {quizStep < questions.length ? 'Next' : "Let's find roommates! 🎉"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      const Home = () => (
+        <div style={{ display: 'flex', minHeight: '100vh', background: c.bg, fontFamily: "'Inter', sans-serif" }}>
+          <Nav active={tab} onChange={(t) => { if (t === 'logout') setScreen('login'); else { setTab(t); setScreen(t); }}} notifications={notifications} />
+          
+          <main id="main-content" style={{ flex: 1, padding: '40px 48px', overflowY: 'auto' }}>
+            {/* Header */}
+            <header style={{ marginBottom: '36px' }}>
+              <h1 style={{ margin: '0 0 6px 0', fontSize: '32px', fontWeight: '800', color: c.navy }}>
+                {getGreeting()}, Jon 👋
+              </h1>
+              <p style={{ margin: 0, color: c.textSoft, fontSize: '16px' }}>
+                Here's what's happening with your roommate search
+              </p>
+            </header>
+            
+            {/* Stats */}
+            <section style={{ marginBottom: '36px' }}>
+              <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+                <StatCard icon="👀" value="24" label="Profile views" subtext="↑ 12 this week" color={c.terracottaSoft} />
+                <StatCard icon="💜" value="6" label="Total matches" subtext="2 new!" color="rgba(139, 92, 246, 0.15)" />
+                <StatCard icon="💬" value="12" label="Messages" subtext="3 unread" color="rgba(34, 197, 94, 0.15)" />
+                <StatCard icon="✨" value="87%" label="Avg. compatibility" color="rgba(251, 191, 36, 0.15)" />
+              </div>
+            </section>
+            
+            {/* Two column layout */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '32px' }}>
+              {/* Left column */}
+              <div>
+                {/* Quick actions */}
+                <section style={{ marginBottom: '32px' }}>
+                  <h2 style={{ fontSize: '18px', fontWeight: '700', color: c.navy, marginBottom: '16px' }}>Quick actions</h2>
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                    <Button variant="primary" full={false} onClick={() => { setTab('swipe'); setScreen('swipe'); }}>
+                      Find roommates ✨
+                    </Button>
+                    <Button variant="secondary" full={false} onClick={() => { setTab('matches'); setScreen('matches'); }}>
+                      View matches
+                    </Button>
+                    <Button variant="secondary" full={false} onClick={() => { setTab('profile'); setScreen('profile'); }}>
+                      Edit profile
+                    </Button>
+                  </div>
+                </section>
+                
+                {/* Recent matches */}
+                <section>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <h2 style={{ fontSize: '18px', fontWeight: '700', color: c.navy, margin: 0 }}>Recent matches</h2>
+                    <button onClick={() => { setTab('matches'); setScreen('matches'); }} style={{
+                      background: 'none', border: 'none', color: c.terracotta,
+                      fontSize: '14px', fontWeight: '600', cursor: 'pointer', fontFamily: "'Inter', sans-serif",
+                    }}>
+                      View all →
+                    </button>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+                    {matches.slice(0, 3).map((m, i) => (
+                      <MatchTile key={i} {...m} onClick={() => { setChatWith({ ...m, id: i }); setScreen('chat-detail'); setTab('chat'); }} />
+                    ))}
+                  </div>
+                </section>
+              </div>
+              
+              {/* Right column */}
+              <div>
+                {/* Tips */}
+                <section style={{ marginBottom: '32px' }}>
+                  <h2 style={{ fontSize: '18px', fontWeight: '700', color: c.navy, marginBottom: '16px' }}>Tips for you</h2>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {tips.map((tip, i) => (
+                      <TipCard key={i} {...tip} />
+                    ))}
+                  </div>
+                </section>
+                
+                {/* Featured image */}
+                <div style={{
+                  borderRadius: '20px', overflow: 'hidden', position: 'relative',
+                  height: '180px',
+                }}>
+                  <img src={images.campus} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <div style={{
+                    position: 'absolute', inset: 0,
+                    background: 'linear-gradient(to top, rgba(22,25,42,0.8) 0%, transparent 100%)',
+                    display: 'flex', alignItems: 'flex-end', padding: '20px',
+                  }}>
+                    <p style={{ margin: 0, color: c.white, fontSize: '15px', fontWeight: '600', fontFamily: "'Inter', sans-serif" }}>
+                      🎓 5,000+ LSU students have found roommates on Roomr
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      );
+
+      const Swipe = () => (
+        <div style={{ display: 'flex', minHeight: '100vh', background: c.bg, fontFamily: "'Inter', sans-serif" }}>
+          <Nav active={tab} onChange={(t) => { if (t === 'logout') setScreen('login'); else { setTab(t); setScreen(t); }}} notifications={notifications} />
+          <main id="main-content" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px' }}>
+            <ProfileCard 
+              {...profiles[profileIndex]}
+              onLike={() => { if (profileIndex === 0) setShowMatch(true); else setProfileIndex((profileIndex + 1) % profiles.length); }}
+              onPass={() => setProfileIndex((profileIndex + 1) % profiles.length)}
+            />
+          </main>
+          {showMatch && (
+            <MatchPopup 
+              name="Sarah"
+              photo={profiles[0].photo}
+              compatibility={profiles[0].compatibility}
+              onMessage={() => { setShowMatch(false); setChatWith(conversations[0]); setScreen('chat-detail'); setTab('chat'); }}
+              onKeepSwiping={() => { setShowMatch(false); setProfileIndex(1); }}
+            />
+          )}
+        </div>
+      );
+
+      const MatchesScreen = () => (
+        <div style={{ display: 'flex', minHeight: '100vh', background: c.bg, fontFamily: "'Inter', sans-serif" }}>
+          <Nav active={tab} onChange={(t) => { if (t === 'logout') setScreen('login'); else { setTab(t); setScreen(t); }}} notifications={notifications} />
+          <main id="main-content" style={{ flex: 1, padding: '40px 48px', overflowY: 'auto' }}>
+            <header style={{ marginBottom: '32px' }}>
+              <h1 style={{ margin: '0 0 6px 0', fontSize: '28px', fontWeight: '800', color: c.navy }}>Your matches 💜</h1>
+              <p style={{ margin: 0, color: c.textSoft, fontSize: '15px' }}>People who are also interested in rooming with you</p>
+            </header>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>
+              {matches.map((m, i) => (
+                <MatchTile key={i} {...m} onClick={() => { setChatWith({ ...m, id: i, photo: m.photo }); setScreen('chat-detail'); }} />
+              ))}
+            </div>
+          </main>
+        </div>
+      );
+
+      const ChatList = () => (
+        <div style={{ display: 'flex', minHeight: '100vh', background: c.bg, fontFamily: "'Inter', sans-serif" }}>
+          <Nav active={tab} onChange={(t) => { if (t === 'logout') setScreen('login'); else { setTab(t); setScreen(t); }}} notifications={notifications} />
+          <main id="main-content" style={{ flex: 1, padding: '40px 48px', overflowY: 'auto' }}>
+            <header style={{ marginBottom: '32px' }}>
+              <h1 style={{ margin: '0 0 6px 0', fontSize: '28px', fontWeight: '800', color: c.navy }}>Messages 💬</h1>
+              <p style={{ margin: 0, color: c.textSoft, fontSize: '15px' }}>Chat with your potential roommates</p>
+            </header>
+            <div style={{ maxWidth: '700px' }}>
+              {conversations.map((conv) => (
+                <ConversationItem key={conv.id} {...conv} onClick={() => { setChatWith(conv); setScreen('chat-detail'); }} />
+              ))}
+            </div>
+          </main>
+        </div>
+      );
+
+      const ChatDetail = () => (
+        <div style={{ display: 'flex', minHeight: '100vh', height: '100vh', background: c.bg, fontFamily: "'Inter', sans-serif" }}>
+          <Nav active={tab} onChange={(t) => { if (t === 'logout') setScreen('login'); else { setTab(t); setScreen(t); }}} notifications={notifications} />
+          <main id="main-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh' }}>
+            <header style={{ 
+              padding: '20px 32px', background: c.white, 
+              borderBottom: `1px solid ${c.borderLight}`,
+              display: 'flex', alignItems: 'center', gap: '16px',
+            }}>
+              <button onClick={() => setScreen('chat')} style={{ 
+                background: c.surfaceAlt, border: 'none', width: '40px', height: '40px',
+                borderRadius: '10px', cursor: 'pointer', fontSize: '18px', color: c.textSoft,
+              }}>←</button>
+              <Avatar src={chatWith?.photo || images.profiles[0]} size={48} />
+              <div>
+                <span style={{ fontSize: '17px', fontWeight: '600', color: c.navy, display: 'block' }}>{chatWith?.name}</span>
+                <span style={{ fontSize: '13px', color: c.success }}>● Online</span>
+              </div>
+            </header>
+            <div style={{ flex: 1, padding: '28px 32px', overflowY: 'auto', background: c.surfaceAlt }}>
+              {messages.map((m, i) => <Message key={i} {...m} />)}
+            </div>
+            <footer style={{ padding: '20px 32px', background: c.white, display: 'flex', gap: '14px' }}>
+              <Button 
+    variant="secondary" 
+    full={false}
+    onClick={() => generateIcebreaker()}
+  >
+    🎲 Icebreaker
+  </Button>
+
+  <input 
+    placeholder="Type a message..." 
+    style={{
+      flex: 1,
+      padding: '14px 20px',
+      borderRadius: '12px',
+      border: `2px solid ${c.borderLight}`,
+      fontSize: '15px',
+      fontFamily: "'Inter', sans-serif",
+    }} 
+  />
+
+  <Button variant="primary" full={false}>
+    Send
+  </Button>
+            </footer>
+          </main>
+        </div>
+      );
+
+      const ProfileScreen = () => (
+        <div style={{ display: 'flex', minHeight: '100vh', background: c.bg, fontFamily: "'Inter', sans-serif" }}>
+          <Nav active={tab} onChange={(t) => { if (t === 'logout') setScreen('login'); else { setTab(t); setScreen(t); }}} notifications={notifications} />
+          <main id="main-content" style={{ flex: 1, padding: '40px 48px', overflowY: 'auto' }}>
+            <div style={{ maxWidth: '600px' }}>
+              {/* Profile header */}
+              <div style={{
+                background: c.white, borderRadius: '24px', padding: '32px',
+                marginBottom: '24px', display: 'flex', gap: '24px', alignItems: 'center',
+              }}>
+                <Avatar src={images.profiles[1]} size={120} border={`4px solid ${c.terracotta}`} />
+                <div>
+                  <h1 style={{ margin: '0 0 4px 0', fontSize: '28px', fontWeight: '800', color: c.navy }}>Jon, 22</h1>
+                  <p style={{ margin: '0 0 4px 0', color: c.textSoft, fontSize: '16px' }}>Computer Science · LSU</p>
+                  <p style={{ margin: '0 0 12px 0', color: c.textMuted, fontSize: '14px' }}>Class of 2026 · Baton Rouge, LA</p>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    {['🌙 Night owl', '🧹 Clean', '📚 Study-focused'].map((tag, i) => (
+                      <span key={i} style={{
+                        background: c.surfaceAlt, padding: '6px 12px', borderRadius: '20px',
+                        fontSize: '12px', color: c.textSoft,
+                      }}>{tag}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Bio */}
+              <div style={{ background: c.white, borderRadius: '20px', padding: '28px', marginBottom: '24px' }}>
+                <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: '700', color: c.navy }}>About me</h3>
+                <p style={{ margin: 0, color: c.textSoft, fontSize: '15px', lineHeight: '1.6' }}>
+                  Senior CS student who loves movie nights and trying new coffee shops. Clean, easygoing, and always down to grab food or study together. Looking for someone with similar vibes! 🎬☕
+                </p>
+              </div>
+              
+              {/* Actions */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <Button variant="secondary" onClick={() => setScreen('edit-profile')}>Edit profile</Button>
+                <Button variant="secondary" onClick={() => { setQuizStep(1); setScreen('quiz'); }}>Update lifestyle preferences</Button>
+                <Button variant="ghost" onClick={() => setScreen('login')}>Sign out</Button>
+              </div>
+            </div>
+          </main>
+        </div>
+      );
+
+      const EditProfile = () => (
+        <div style={{ display: 'flex', minHeight: '100vh', background: c.bg, fontFamily: "'Inter', sans-serif" }}>
+          <Nav active={tab} onChange={(t) => { if (t === 'logout') setScreen('login'); else { setTab(t); setScreen(t); }}} notifications={notifications} />
+          <main id="main-content" style={{ flex: 1, padding: '40px 48px', overflowY: 'auto' }}>
+            <div style={{ maxWidth: '540px' }}>
+              <header style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
+                <button onClick={() => setScreen('profile')} style={{
+                  background: c.white, border: 'none', width: '44px', height: '44px',
+                  borderRadius: '12px', cursor: 'pointer', fontSize: '20px', color: c.textSoft,
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                }}>←</button>
+                <h1 style={{ margin: 0, fontSize: '24px', fontWeight: '700', color: c.navy }}>Edit profile</h1>
+              </header>
+              
+              <div style={{ background: c.white, borderRadius: '24px', padding: '32px' }}>
+                {/* Photos */}
+                <div style={{ marginBottom: '28px' }}>
+                  <label style={{ display: 'block', marginBottom: '12px', fontSize: '13px', fontWeight: '600', color: c.textSoft }}>
+                    Photos
+                  </label>
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <div style={{ width: '100px', height: '100px', borderRadius: '16px', overflow: 'hidden' }}>
+                      <img src={images.profiles[1]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                    {[1,2,3].map(i => (
+                      <button key={i} style={{
+                        width: '100px', height: '100px', borderRadius: '16px',
+                        border: `2px dashed ${c.border}`, background: c.surfaceAlt,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        cursor: 'pointer', color: c.textMuted, fontSize: '24px',
+                      }}>+</button>
+                    ))}
+                  </div>
+                </div>
+                
+                <Input label="Name" value="Jon" id="edit-name" />
+                <Input label="Age" value="22" id="edit-age" />
+                <Input label="University" value="Louisiana State University" id="edit-uni" />
+                <Input label="Major" value="Computer Science" id="edit-major" />
+                <TextArea 
+                  label="About me" 
+                  value="Senior CS student who loves movie nights and trying new coffee shops. Clean, easygoing, and always down to grab food or study together. Looking for someone with similar vibes! 🎬☕" 
+                  id="edit-bio"
+                />
+                
+                <div style={{ display: 'flex', gap: '14px', marginTop: '12px' }}>
+                  <Button variant="secondary" onClick={() => setScreen('profile')}>Cancel</Button>
+                  <Button variant="primary" onClick={() => setScreen('profile')}>Save changes</Button>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      );
+
+      const screens = {
+        splash: Splash, login: Login, register: Register,
+        'profile-setup': ProfileSetup, quiz: Quiz, home: Home,
+        swipe: Swipe, matches: MatchesScreen, chat: ChatList,
+        'chat-detail': ChatDetail, profile: ProfileScreen, 'edit-profile': EditProfile,
+      };
+
+      const Screen = screens[screen] || Splash;
+      return <Screen />;
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
