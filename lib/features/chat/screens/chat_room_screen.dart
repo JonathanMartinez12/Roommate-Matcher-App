@@ -7,6 +7,8 @@ import '../../../core/constants/app_colors.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/chat_provider.dart';
 import '../../../providers/matches_provider.dart';
+import '../../../services/firestore_service.dart';
+import '../../../services/notification_service.dart';
 import '../widgets/message_bubble.dart';
 
 class ChatRoomScreen extends ConsumerStatefulWidget {
@@ -35,11 +37,18 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(chatNotifierProvider(widget.matchId).notifier).markRead();
+      // Tell the server + local FCM handler that this chat is now focused,
+      // so message pushes for it are suppressed.
+      ref.read(activeChatIdProvider.notifier).state = widget.matchId;
+      ref.read(firestoreServiceProvider).setActiveChatId(widget.matchId);
     });
   }
 
   @override
   void dispose() {
+    // Best-effort clear; don't await since dispose is synchronous.
+    ref.read(activeChatIdProvider.notifier).state = null;
+    ref.read(firestoreServiceProvider).setActiveChatId(null);
     _textCtrl.dispose();
     _scrollCtrl.dispose();
     super.dispose();
@@ -52,6 +61,103 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
       }
     });
+  }
+
+  Future<void> _blockUser(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Block user?'),
+        content: Text('${widget.matchedUserName} will no longer be able to contact you or appear in your matches.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Block', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    await ref.read(firestoreServiceProvider).blockUser(widget.matchedUserId);
+    if (mounted) Navigator.of(context).pop();
+  }
+
+  Future<void> _reportUser(BuildContext context) async {
+    String? selectedCategory;
+    final reasonCtrl = TextEditingController();
+    final categories = ['Inappropriate photos', 'Harassment', 'Fake profile', 'Spam', 'Other'];
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) => Padding(
+          padding: EdgeInsets.fromLTRB(24, 24, 24, MediaQuery.of(ctx).viewInsets.bottom + 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Report ${widget.matchedUserName}',
+                  style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.navy)),
+              const SizedBox(height: 4),
+              Text('Select a reason', style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSoft)),
+              const SizedBox(height: 16),
+              ...categories.map((cat) => RadioListTile<String>(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    value: cat,
+                    groupValue: selectedCategory,
+                    title: Text(cat, style: GoogleFonts.inter(fontSize: 14)),
+                    onChanged: (v) => setModalState(() => selectedCategory = v),
+                    activeColor: AppColors.terracotta,
+                  )),
+              const SizedBox(height: 8),
+              TextField(
+                controller: reasonCtrl,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  hintText: 'Additional details (optional)',
+                  hintStyle: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 14),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  contentPadding: const EdgeInsets.all(12),
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: selectedCategory == null
+                      ? null
+                      : () async {
+                          Navigator.pop(ctx);
+                          await ref.read(firestoreServiceProvider).reportUser(
+                                reportedUserId: widget.matchedUserId,
+                                category: selectedCategory!,
+                                reason: reasonCtrl.text.trim(),
+                              );
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Report submitted. Thank you.')),
+                            );
+                          }
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.terracotta,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: Text('Submit Report', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    reasonCtrl.dispose();
   }
 
   Future<void> _sendMessage() async {
@@ -149,9 +255,34 @@ Builder(builder: (_) {
     },
   );
 }),
-                      
+
                       ],
                     ),
+                  ),
+                  PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert, color: AppColors.textSoft),
+                    onSelected: (value) {
+                      if (value == 'block') _blockUser(context);
+                      if (value == 'report') _reportUser(context);
+                    },
+                    itemBuilder: (_) => [
+                      const PopupMenuItem(
+                        value: 'block',
+                        child: Row(children: [
+                          Icon(Icons.block, size: 20, color: Colors.red),
+                          SizedBox(width: 12),
+                          Text('Block user'),
+                        ]),
+                      ),
+                      const PopupMenuItem(
+                        value: 'report',
+                        child: Row(children: [
+                          Icon(Icons.flag_outlined, size: 20),
+                          SizedBox(width: 12),
+                          Text('Report user'),
+                        ]),
+                      ),
+                    ],
                   ),
                 ],
               ),

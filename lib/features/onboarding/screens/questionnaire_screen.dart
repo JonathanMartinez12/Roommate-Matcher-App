@@ -7,6 +7,7 @@ import '../../../models/user_model.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../services/firestore_service.dart';
 import '../../../services/matching_service.dart';
+import '../../../services/notification_service.dart';
 
 class QuestionnaireScreen extends ConsumerStatefulWidget {
   const QuestionnaireScreen({super.key});
@@ -66,6 +67,9 @@ class _QuestionnaireScreenState extends ConsumerState<QuestionnaireScreen> {
         'dealbreakers': _dealbreakers.toList(),
         'isProfileComplete': true,
       });
+      // Request push notification permission at the end of onboarding.
+      // NotificationService.init() persists the FCM token and is idempotent.
+      await ref.read(notificationServiceProvider).init();
       if (mounted) context.go('/home');
     } catch (e) {
       if (mounted) {

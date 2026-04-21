@@ -95,6 +95,13 @@ class UserModel {
   ///               'no_night_owl', 'no_early_bird', 'no_guests'
   final List<String> dealbreakers;
   final DateTime?  lastActiveAt;
+  final List<String> blockedUsers;
+  final List<String> fcmTokens;
+  final bool notifyOnMatch;
+  final bool notifyOnMessage;
+  /// When non-null, the recipient is actively viewing this chat and should
+  /// not receive push notifications for incoming messages in it.
+  final String? activeChatId;
 
   const UserModel({
     required this.id,
@@ -110,6 +117,11 @@ class UserModel {
     required this.createdAt,
     this.dealbreakers = const [],
     this.lastActiveAt,
+    this.blockedUsers = const [],
+    this.fcmTokens = const [],
+    this.notifyOnMatch = true,
+    this.notifyOnMessage = true,
+    this.activeChatId,
   });
 
   factory UserModel.fromMap(Map<String, dynamic> map, String id) {
@@ -129,6 +141,11 @@ class UserModel {
       createdAt: _toDateTime(map['createdAt']),
       dealbreakers: List<String>.from(map['dealbreakers'] ?? []),
       lastActiveAt: map['lastActiveAt'] != null ? _toDateTime(map['lastActiveAt']) : null,
+      blockedUsers: List<String>.from(map['blockedUsers'] ?? []),
+      fcmTokens: List<String>.from(map['fcmTokens'] ?? []),
+      notifyOnMatch: map['notifyOnMatch'] ?? true,
+      notifyOnMessage: map['notifyOnMessage'] ?? true,
+      activeChatId: map['activeChatId'],
     );
   }
 
@@ -146,6 +163,11 @@ class UserModel {
       'createdAt': Timestamp.fromDate(createdAt),
       'dealbreakers': dealbreakers,
       'lastActiveAt': lastActiveAt != null ? Timestamp.fromDate(lastActiveAt!) : null,
+      'blockedUsers': blockedUsers,
+      'fcmTokens': fcmTokens,
+      'notifyOnMatch': notifyOnMatch,
+      'notifyOnMessage': notifyOnMessage,
+      'activeChatId': activeChatId,
     };
   }
 
@@ -163,6 +185,11 @@ class UserModel {
     DateTime? createdAt,
     DateTime? lastActiveAt,
     List<String>? dealbreakers,
+    List<String>? blockedUsers,
+    List<String>? fcmTokens,
+    bool? notifyOnMatch,
+    bool? notifyOnMessage,
+    String? activeChatId,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -178,6 +205,11 @@ class UserModel {
       createdAt: createdAt ?? this.createdAt,
       dealbreakers: dealbreakers ?? this.dealbreakers,
       lastActiveAt: lastActiveAt ?? this.lastActiveAt,
+      blockedUsers: blockedUsers ?? this.blockedUsers,
+      fcmTokens: fcmTokens ?? this.fcmTokens,
+      notifyOnMatch: notifyOnMatch ?? this.notifyOnMatch,
+      notifyOnMessage: notifyOnMessage ?? this.notifyOnMessage,
+      activeChatId: activeChatId ?? this.activeChatId,
     );
   }
 

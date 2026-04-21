@@ -7,6 +7,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../models/user_model.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/swipe_provider.dart';
+import '../../../services/firestore_service.dart';
 import '../../../services/seed_service.dart';
 import '../../../shared/widgets/custom_app_bar.dart';
 import '../widgets/swipe_card.dart';
@@ -28,6 +29,103 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
   void dispose() {
     _swiperController.dispose();
     super.dispose();
+  }
+
+  Future<void> _blockUser(UserModel profile) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Block user?'),
+        content: Text('${profile.firstName} will no longer appear in your discovery or matches.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Block', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    await ref.read(firestoreServiceProvider).blockUser(profile.id);
+    ref.read(swipeProvider.notifier).pass(profile.id);
+  }
+
+  Future<void> _reportUser(UserModel profile) async {
+    String? selectedCategory;
+    final reasonCtrl = TextEditingController();
+    final categories = ['Inappropriate photos', 'Harassment', 'Fake profile', 'Spam', 'Other'];
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) => Padding(
+          padding: EdgeInsets.fromLTRB(24, 24, 24, MediaQuery.of(ctx).viewInsets.bottom + 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Report ${profile.firstName}',
+                  style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.navy)),
+              const SizedBox(height: 4),
+              Text('Select a reason', style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSoft)),
+              const SizedBox(height: 16),
+              ...categories.map((cat) => RadioListTile<String>(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    value: cat,
+                    groupValue: selectedCategory,
+                    title: Text(cat, style: GoogleFonts.inter(fontSize: 14)),
+                    onChanged: (v) => setModalState(() => selectedCategory = v),
+                    activeColor: AppColors.terracotta,
+                  )),
+              const SizedBox(height: 8),
+              TextField(
+                controller: reasonCtrl,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  hintText: 'Additional details (optional)',
+                  hintStyle: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 14),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  contentPadding: const EdgeInsets.all(12),
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: selectedCategory == null
+                      ? null
+                      : () async {
+                          Navigator.pop(ctx);
+                          await ref.read(firestoreServiceProvider).reportUser(
+                                reportedUserId: profile.id,
+                                category: selectedCategory!,
+                                reason: reasonCtrl.text.trim(),
+                              );
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Report submitted. Thank you.')),
+                            );
+                          }
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.terracotta,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: Text('Submit Report', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    reasonCtrl.dispose();
   }
 
   Future<void> _handleSwipe(UserModel profile, CardSwiperDirection direction) async {
@@ -128,6 +226,8 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
                     isTop: index == 0,
                     onLike: () => _swiperController.swipe(CardSwiperDirection.right),
                     onPass: () => _swiperController.swipe(CardSwiperDirection.left),
+                    onBlock: index == 0 ? () => _blockUser(profiles[index]) : null,
+                    onReport: index == 0 ? () => _reportUser(profiles[index]) : null,
                   ),
                 );
               },

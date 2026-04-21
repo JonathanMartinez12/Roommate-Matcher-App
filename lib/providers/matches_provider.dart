@@ -4,12 +4,14 @@ import '../models/match_model.dart';
 import '../models/user_model.dart';
 import '../services/firestore_service.dart';
 import 'auth_provider.dart';
+import 'block_report_provider.dart';
 
 final matchesProvider = StreamProvider<List<MatchModel>>((ref) {
   final authState = ref.watch(authStateProvider);
   final userId = authState.valueOrNull?.uid;
   if (userId == null) return Stream.value([]);
-  return ref.watch(firestoreServiceProvider).matchesStream();
+  final blockedUsers = ref.watch(blockedUsersProvider).valueOrNull ?? [];
+  return ref.watch(firestoreServiceProvider).matchesStream(blockedUserIds: blockedUsers);
 });
 
 final matchUserProvider =

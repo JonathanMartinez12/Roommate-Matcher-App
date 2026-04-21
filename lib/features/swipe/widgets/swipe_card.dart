@@ -11,6 +11,8 @@ class SwipeCard extends StatefulWidget {
   final bool isTop;
   final VoidCallback? onLike;
   final VoidCallback? onPass;
+  final VoidCallback? onBlock;
+  final VoidCallback? onReport;
 
   const SwipeCard({
     super.key,
@@ -19,6 +21,8 @@ class SwipeCard extends StatefulWidget {
     this.isTop = false,
     this.onLike,
     this.onPass,
+    this.onBlock,
+    this.onReport,
   });
 
   @override
@@ -79,6 +83,49 @@ class _SwipeCardState extends State<SwipeCard> {
                   if (widget.user.photoUrls.length > 1)
                     Positioned(
                         top: 12, left: 12, right: 12, child: _buildPhotoDots()),
+                  if (widget.onBlock != null || widget.onReport != null)
+                    Positioned(
+                      top: widget.user.photoUrls.length > 1 ? 28 : 12,
+                      left: 12,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: PopupMenuButton<String>(
+                          padding: EdgeInsets.zero,
+                          icon: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.45),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.more_vert, color: Colors.white, size: 18),
+                          ),
+                          onSelected: (value) {
+                            if (value == 'block') widget.onBlock?.call();
+                            if (value == 'report') widget.onReport?.call();
+                          },
+                          itemBuilder: (_) => [
+                            if (widget.onBlock != null)
+                              const PopupMenuItem(
+                                value: 'block',
+                                child: Row(children: [
+                                  Icon(Icons.block, size: 20, color: Colors.red),
+                                  SizedBox(width: 12),
+                                  Text('Block user'),
+                                ]),
+                              ),
+                            if (widget.onReport != null)
+                              const PopupMenuItem(
+                                value: 'report',
+                                child: Row(children: [
+                                  Icon(Icons.flag_outlined, size: 20),
+                                  SizedBox(width: 12),
+                                  Text('Report user'),
+                                ]),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
                   // Gradient overlay
                   Positioned(
                     bottom: 0,

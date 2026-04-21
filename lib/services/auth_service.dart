@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_model.dart';
+import 'notification_service.dart';
 
 // ── Firebase Auth instance ─────────────────────────────────────────────────
 
@@ -70,6 +71,8 @@ class AuthService {
 
   // ── Sign out ─────────────────────────────────────────────────────────────
   Future<void> signOut() async {
+    // Remove this device's FCM token before losing Firestore auth.
+    await _ref.read(notificationServiceProvider).clearTokenForCurrentUser();
     // Clear local profile state first so the router sees null immediately.
     _ref.read(authNotifierProvider.notifier).clearUser();
     await _auth.signOut();

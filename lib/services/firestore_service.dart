@@ -18,6 +18,7 @@ import 'matching_service.dart';
 //   swipes/{uid}/outgoing/{toUid}       — {direction: 'like'|'pass', createdAt}
 //   matches/{matchId}                   — MatchModel fields
 //   matches/{matchId}/messages/{msgId}  — MessageModel fields
+//   reports/{reportId}                  — {reporterId, reportedUserId, category, reason, timestamp}
 //
 // Match IDs are deterministic: sorted([uid1, uid2]).join('_').
 // This ensures both users reference the same document.
@@ -66,6 +67,79 @@ class FirestoreService {
     'lastActiveAt': FieldValue.serverTimestamp(),
   });
   }
+
+  // ── Block / Report ────────────────────────────────────────────────────────
+
+  Future<void> blockUser(String userId) async {
+    await _users.doc(currentUserId).update({
+      'blockedUsers': FieldValue.arrayUnion([userId]),
+    });
+  }
+
+  Future<void> unblockUser(String userId) async {
+    await _users.doc(currentUserId).update({
+      'blockedUsers': FieldValue.arrayRemove([userId]),
+    });
+  }
+
+  Future<void> reportUser({
+    required String reportedUserId,
+    required String category,
+    String reason = '',
+  }) async {
+    await _db.collection('reports').add({
+      'reporterId': currentUserId,
+      'reportedUserId': reportedUserId,
+      'category': category,
+      'reason': reason,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Stream<List<String>> blockedUsersStream() {
+    return _users.doc(currentUserId).snapshots().map((doc) {
+      if (!doc.exists || doc.data() == null) return [];
+      return List<String>.from(doc.data()!['blockedUsers'] ?? []);
+    });
+  }
+
+  // ── Push notifications ───────────────────────────────────────────────────
+
+  Future<void> saveFcmToken(String token) async {
+    if (currentUserId.isEmpty) return;
+    await _users.doc(currentUserId).set({
+      'fcmTokens': FieldValue.arrayUnion([token]),
+    }, SetOptions(merge: true));
+  }
+
+  Future<void> removeFcmToken(String token) async {
+    if (currentUserId.isEmpty) return;
+    await _users.doc(currentUserId).update({
+      'fcmTokens': FieldValue.arrayRemove([token]),
+    });
+  }
+
+  Future<void> updateNotificationPreferences({
+    bool? notifyOnMatch,
+    bool? notifyOnMessage,
+  }) async {
+    final data = <String, dynamic>{};
+    if (notifyOnMatch != null) data['notifyOnMatch'] = notifyOnMatch;
+    if (notifyOnMessage != null) data['notifyOnMessage'] = notifyOnMessage;
+    if (data.isEmpty) return;
+    await _users.doc(currentUserId).set(data, SetOptions(merge: true));
+  }
+
+  /// Records that the current user is actively viewing [matchId], so the
+  /// server can skip sending a push notification for messages in that chat.
+  /// Pass null when the user leaves the chat.
+  Future<void> setActiveChatId(String? matchId) async {
+    if (currentUserId.isEmpty) return;
+    await _users.doc(currentUserId).set({
+      'activeChatId': matchId,
+    }, SetOptions(merge: true));
+  }
+
   // ── Potential matches (swipe deck) ────────────────────────────────────────
 
   Future<List<UserModel>> getPotentialMatches({
@@ -78,16 +152,24 @@ class FirestoreService {
         .collection('outgoing')
         .get();
 
-    final exclude = {
-      currentUserId,
-      ...excludeIds,
-      ...swipedSnap.docs.map((d) => d.id),
-    };
-    // Fetch current user's profile for dealbreaker filtering
+    // Fetch current user's profile for dealbreaker + block filtering
     final meDoc = await _users.doc(currentUserId).get();
     final me = meDoc.exists && meDoc.data() != null
         ? UserModel.fromMap(meDoc.data()!, currentUserId)
         : null;
+
+    // Users who have blocked the current user
+    final blockedBySnap = await _users
+        .where('blockedUsers', arrayContains: currentUserId)
+        .get();
+
+    final exclude = {
+      currentUserId,
+      ...excludeIds,
+      ...swipedSnap.docs.map((d) => d.id),
+      ...(me?.blockedUsers ?? []),
+      ...blockedBySnap.docs.map((d) => d.id),
+    };
 
     if (kDebugMode) {
       debugPrint('[SwipeDeck] currentUserId=$currentUserId');
@@ -205,7 +287,7 @@ class FirestoreService {
 
   // ── Match methods ─────────────────────────────────────────────────────────
 
-  Stream<List<MatchModel>> matchesStream() {
+  Stream<List<MatchModel>> matchesStream({List<String> blockedUserIds = const []}) {
     // No orderBy on the Firestore query — lastMessageAt is absent on new
     // matches (no messages yet) which would cause index/missing-field errors.
     // Sort client-side instead: most-recently-active first.
@@ -215,6 +297,14 @@ class FirestoreService {
         .map((snap) {
           final matches = snap.docs
               .map((doc) => MatchModel.fromMap(doc.data(), docId: doc.id))
+              .where((m) {
+                if (blockedUserIds.isEmpty) return true;
+                final otherId = m.userIds.firstWhere(
+                  (id) => id != currentUserId,
+                  orElse: () => '',
+                );
+                return !blockedUserIds.contains(otherId);
+              })
               .toList();
           matches.sort((a, b) {
             final aTime = a.lastMessageAt ?? a.createdAt;
