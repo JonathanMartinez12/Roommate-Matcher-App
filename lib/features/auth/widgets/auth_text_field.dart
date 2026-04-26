@@ -36,6 +36,27 @@ class AuthTextField extends StatefulWidget {
 
 class _AuthTextFieldState extends State<AuthTextField> {
   bool _obscureText = true;
+  late final FocusNode _focusNode;
+  bool _focused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode()..addListener(_onFocusChange);
+  }
+
+  void _onFocusChange() {
+    if (_focused != _focusNode.hasFocus) {
+      setState(() => _focused = _focusNode.hasFocus);
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_onFocusChange);
+    _focusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,35 +64,71 @@ class _AuthTextFieldState extends State<AuthTextField> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(widget.label,
-          style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSoft)),
+            style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: _focused ? AppColors.terracotta : AppColors.textSoft,
+                letterSpacing: 0.2)),
         const SizedBox(height: 8),
-        TextFormField(
-          controller: widget.controller,
-          obscureText: widget.isPassword && _obscureText,
-          keyboardType: widget.keyboardType,
-          validator: widget.validator,
-          autofocus: widget.autofocus,
-          textInputAction: widget.textInputAction,
-          onEditingComplete: widget.onEditingComplete,
-          maxLines: widget.isPassword ? 1 : widget.maxLines,
-          style: GoogleFonts.inter(fontSize: 15, color: AppColors.text),
-          decoration: InputDecoration(
-            hintText: widget.hint,
-            prefixIcon: widget.prefixIcon,
-            filled: true,
-            fillColor: AppColors.surface,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.borderLight, width: 2)),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.borderLight, width: 2)),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.terracotta, width: 2)),
-            errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.pass, width: 1)),
-            suffixIcon: widget.isPassword
-                ? IconButton(
-                    icon: Icon(_obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                      color: AppColors.textMuted, size: 20),
-                    onPressed: () => setState(() => _obscureText = !_obscureText),
-                  )
-                : null,
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOut,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: _focused
+                ? [
+                    BoxShadow(
+                      color: AppColors.terracotta.withValues(alpha: 0.18),
+                      blurRadius: 18,
+                      offset: const Offset(0, 6),
+                    ),
+                  ]
+                : [],
+          ),
+          child: TextFormField(
+            controller: widget.controller,
+            focusNode: _focusNode,
+            obscureText: widget.isPassword && _obscureText,
+            keyboardType: widget.keyboardType,
+            validator: widget.validator,
+            autofocus: widget.autofocus,
+            textInputAction: widget.textInputAction,
+            onEditingComplete: widget.onEditingComplete,
+            maxLines: widget.isPassword ? 1 : widget.maxLines,
+            style: GoogleFonts.inter(fontSize: 15, color: AppColors.text, fontWeight: FontWeight.w500),
+            decoration: InputDecoration(
+              hintText: widget.hint,
+              prefixIcon: widget.prefixIcon,
+              filled: true,
+              fillColor: AppColors.surface,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: AppColors.borderLight, width: 2)),
+              enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: AppColors.borderLight, width: 2)),
+              focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: AppColors.terracotta, width: 2.5)),
+              errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: AppColors.pass, width: 1.5)),
+              focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: AppColors.pass, width: 2.5)),
+              suffixIcon: widget.isPassword
+                  ? IconButton(
+                      icon: Icon(
+                          _obscureText
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          color: AppColors.textMuted,
+                          size: 20),
+                      onPressed: () => setState(() => _obscureText = !_obscureText),
+                    )
+                  : null,
+            ),
           ),
         ),
         const SizedBox(height: 16),

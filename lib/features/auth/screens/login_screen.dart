@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:email_validator/email_validator.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../shared/widgets/gradient_button.dart';
 import '../widgets/auth_text_field.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -82,15 +85,38 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: AppColors.terracotta.withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(color: AppColors.terracotta.withValues(alpha: 0.4)),
+                          ),
+                          child: Text(
+                            'WELCOME BACK',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              letterSpacing: 1.6,
+                            ),
+                          ),
+                        ).animate().fadeIn(duration: 360.ms).moveY(begin: -6, end: 0),
+                        const SizedBox(height: 24),
                         Text(
-                          'Your perfect roommate is waiting',
-                          style: GoogleFonts.inter(fontSize: 42, fontWeight: FontWeight.w800, color: Colors.white, height: 1.2),
-                        ),
-                        const SizedBox(height: 16),
+                          'Your person is\nout there.',
+                          style: AppTheme.displayStyle(
+                            fontSize: 56,
+                            color: Colors.white,
+                            letterSpacing: -2.0,
+                            height: 1.05,
+                          ),
+                        ).animate().fadeIn(duration: 520.ms).moveY(begin: 12, end: 0, curve: Curves.easeOutCubic),
+                        const SizedBox(height: 18),
                         Text(
-                          'Join thousands of students finding compatible roommates based on lifestyle, habits, and personality.',
-                          style: GoogleFonts.inter(fontSize: 18, color: Colors.white.withValues(alpha: 0.8), height: 1.6),
-                        ),
+                          'Find a roommate who actually matches your lifestyle — not just your move-in date.',
+                          style: GoogleFonts.inter(fontSize: 17, color: Colors.white.withValues(alpha: 0.78), height: 1.6),
+                        ).animate(delay: 180.ms).fadeIn(duration: 440.ms),
                       ],
                     ),
                   ),
@@ -126,19 +152,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             Row(
               children: [
                 Container(
-                  width: 48, height: 48,
-                  decoration: BoxDecoration(color: AppColors.terracotta, borderRadius: BorderRadius.circular(14)),
-                  child: const Icon(Icons.home_rounded, color: Colors.white, size: 24),
+                  width: 52, height: 52,
+                  decoration: BoxDecoration(
+                    gradient: AppColors.primaryGradient,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.terracotta.withValues(alpha: 0.32),
+                        blurRadius: 18,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(Icons.home_rounded, color: Colors.white, size: 26),
                 ),
-                const SizedBox(width: 12),
-                Text('roomr', style: GoogleFonts.inter(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.navy)),
+                const SizedBox(width: 14),
+                Text('roomr',
+                    style: AppTheme.displayStyle(
+                        fontSize: 32, color: AppColors.navy, letterSpacing: -1.0)),
               ],
             ),
-            const SizedBox(height: 48),
-            Text('Welcome back', style: GoogleFonts.inter(fontSize: 32, fontWeight: FontWeight.w700, color: AppColors.navy)),
-            const SizedBox(height: 8),
-            Text('Sign in to continue your roommate search', style: GoogleFonts.inter(fontSize: 16, color: AppColors.textSoft)),
-            const SizedBox(height: 36),
+            const SizedBox(height: 52),
+            Text('Welcome\nback.',
+                style: AppTheme.displayStyle(
+                    fontSize: 44, color: AppColors.navy, letterSpacing: -1.6, height: 1.05)),
+            const SizedBox(height: 12),
+            Text('Sign in to keep finding your people.',
+                style: GoogleFonts.inter(
+                    fontSize: 16, color: AppColors.textSoft, fontWeight: FontWeight.w500)),
+            const SizedBox(height: 40),
 
             AuthTextField(
               label: 'Email',
@@ -187,19 +229,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             const SizedBox(height: 24),
 
             // Sign in button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _login,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.navy,
-                  padding: const EdgeInsets.symmetric(vertical: 18),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-                child: _isLoading
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : Text('Sign in', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
-              ),
+            GradientButton(
+              text: 'Sign in',
+              isLoading: _isLoading,
+              onPressed: _login,
+              icon: Icons.arrow_forward_rounded,
             ),
 
             const SizedBox(height: 28),

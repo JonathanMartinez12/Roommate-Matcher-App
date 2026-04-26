@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../core/constants/app_colors.dart';
+import '../shared/widgets/animated_counter.dart';
 import '../models/match_model.dart';
 import '../models/user_model.dart';
 import '../providers/auth_provider.dart';
@@ -402,6 +403,12 @@ class _DashHeader extends StatelessWidget {
 
 // ── Stat card ──────────────────────────────────────────────────────────────
 class _StatCard extends StatelessWidget {
+  static (int, String) _parseValue(String raw) {
+    final match = RegExp(r'^(\d+)(.*)$').firstMatch(raw.trim());
+    if (match == null) return (0, raw);
+    return (int.parse(match.group(1)!), match.group(2) ?? '');
+  }
+
   const _StatCard({
     required this.iconData,
     required this.iconColor,
@@ -453,14 +460,19 @@ class _StatCard extends StatelessWidget {
             children: [
               Icon(iconData, size: 28, color: iconColor),
               const SizedBox(height: 12),
-              Text(
-                value,
-                style: GoogleFonts.inter(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.navy,
-                ),
-              ),
+              Builder(builder: (context) {
+                final parsed = _parseValue(value);
+                return AnimatedCounter(
+                  value: parsed.$1,
+                  suffix: parsed.$2,
+                  style: GoogleFonts.bricolageGrotesque(
+                    fontSize: 36,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.navy,
+                    letterSpacing: -1.0,
+                  ),
+                );
+              }),
               const SizedBox(height: 4),
               Text(
                 label,

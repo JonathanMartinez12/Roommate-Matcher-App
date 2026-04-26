@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:email_validator/email_validator.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../shared/widgets/gradient_button.dart';
 import '../widgets/auth_text_field.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -88,26 +91,52 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Find roommates who match your lifestyle',
-                          style: GoogleFonts.inter(fontSize: 42, fontWeight: FontWeight.w800, color: Colors.white, height: 1.2),
-                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: AppColors.terracotta.withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(color: AppColors.terracotta.withValues(alpha: 0.4)),
+                          ),
+                          child: Text(
+                            'JOIN ROOMR',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              letterSpacing: 1.6,
+                            ),
+                          ),
+                        ).animate().fadeIn(duration: 360.ms).moveY(begin: -6, end: 0),
                         const SizedBox(height: 24),
+                        Text(
+                          'Find someone\nyou actually\nlike living with.',
+                          style: AppTheme.displayStyle(
+                            fontSize: 52,
+                            color: Colors.white,
+                            letterSpacing: -1.8,
+                            height: 1.05,
+                          ),
+                        ).animate().fadeIn(duration: 520.ms).moveY(begin: 12, end: 0, curve: Curves.easeOutCubic),
+                        const SizedBox(height: 28),
                         ...['Verified .edu emails only', 'Lifestyle compatibility matching', 'Real students, real connections']
-                            .map((item) => Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
+                            .asMap().entries.map((e) => Padding(
+                          padding: const EdgeInsets.only(bottom: 14),
                           child: Row(
                             children: [
                               Container(
                                 width: 28, height: 28,
-                                decoration: const BoxDecoration(color: AppColors.terracotta, shape: BoxShape.circle),
-                                child: const Icon(Icons.check, color: Colors.white, size: 14),
+                                decoration: BoxDecoration(
+                                  gradient: AppColors.primaryGradient,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.check_rounded, color: Colors.white, size: 16),
                               ),
-                              const SizedBox(width: 12),
-                              Text(item, style: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.9), fontSize: 16)),
+                              const SizedBox(width: 14),
+                              Text(e.value, style: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.9), fontSize: 16, fontWeight: FontWeight.w500)),
                             ],
                           ),
-                        )),
+                        ).animate(delay: Duration(milliseconds: 280 + e.key * 100)).fadeIn(duration: 360.ms).moveX(begin: -8, end: 0)),
                       ],
                     ),
                   ),
@@ -198,19 +227,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             ],
             const SizedBox(height: 24),
 
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _register,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.navy,
-                  padding: const EdgeInsets.symmetric(vertical: 18),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-                child: _isLoading
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : Text('Continue', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
-              ),
+            GradientButton(
+              text: 'Continue',
+              isLoading: _isLoading,
+              onPressed: _register,
+              icon: Icons.arrow_forward_rounded,
             ),
 
             const SizedBox(height: 28),

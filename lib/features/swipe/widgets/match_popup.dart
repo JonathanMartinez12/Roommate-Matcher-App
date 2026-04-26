@@ -1,8 +1,10 @@
+import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../models/user_model.dart';
 import '../../../services/matching_service.dart';
 
@@ -28,6 +30,7 @@ class _MatchPopupState extends State<MatchPopup> with SingleTickerProviderStateM
   late AnimationController _controller;
   late Animation<double> _scaleAnim;
   late Animation<double> _fadeAnim;
+  late final ConfettiController _confetti;
 
   int get _compatibility {
     final a = widget.currentUser.questionnaire;
@@ -43,11 +46,13 @@ class _MatchPopupState extends State<MatchPopup> with SingleTickerProviderStateM
     _scaleAnim = CurvedAnimation(parent: _controller, curve: Curves.elasticOut);
     _fadeAnim = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
     _controller.forward();
+    _confetti = ConfettiController(duration: const Duration(seconds: 2))..play();
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _confetti.dispose();
     super.dispose();
   }
 
@@ -59,9 +64,25 @@ class _MatchPopupState extends State<MatchPopup> with SingleTickerProviderStateM
         opacity: _fadeAnim,
         child: Container(
           color: AppColors.navy.withValues(alpha: 0.9),
-          child: BackdropFilter(
-            filter: const ColorFilter.mode(Colors.transparent, BlendMode.src),
-            child: Center(
+          child: Stack(
+            alignment: Alignment.topCenter,
+            children: [
+              ConfettiWidget(
+                confettiController: _confetti,
+                blastDirectionality: BlastDirectionality.explosive,
+                emissionFrequency: 0.06,
+                numberOfParticles: 22,
+                maxBlastForce: 24,
+                minBlastForce: 8,
+                gravity: 0.25,
+                colors: const [
+                  AppColors.terracotta,
+                  AppColors.terracottaGlow,
+                  AppColors.cream,
+                  Colors.white,
+                ],
+              ),
+              Center(
               child: ScaleTransition(
                 scale: _scaleAnim,
                 child: Container(
@@ -80,7 +101,7 @@ class _MatchPopupState extends State<MatchPopup> with SingleTickerProviderStateM
                       const SizedBox(height: 20),
                       Text(
                         "It's a match!",
-                        style: GoogleFonts.inter(fontSize: 32, fontWeight: FontWeight.w800, color: AppColors.navy),
+                        style: AppTheme.displayStyle(fontSize: 36, color: AppColors.navy, letterSpacing: -1.2),
                       ),
                       const SizedBox(height: 8),
                       Text(
@@ -149,6 +170,7 @@ class _MatchPopupState extends State<MatchPopup> with SingleTickerProviderStateM
                 ),
               ),
             ),
+            ],
           ),
         ),
       ),
