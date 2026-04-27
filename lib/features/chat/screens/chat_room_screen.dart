@@ -166,7 +166,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     _textCtrl.clear();
     await ref
         .read(chatNotifierProvider(widget.matchId).notifier)
-        .sendMessage(text);
+        .sendMessage(text, receiverUserId: widget.matchedUserId);
     _scrollToBottom();
   }
 
@@ -179,11 +179,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     return Scaffold(
       backgroundColor: AppColors.surfaceAlt,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(kToolbarHeight),
+        preferredSize: const Size.fromHeight(68),
         child: Container(
           color: Colors.white,
-          child: SafeArea(
-            child: Padding(
+          child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Row(
                 children: [
@@ -287,7 +286,6 @@ Builder(builder: (_) {
                 ],
               ),
             ),
-          ),
         ),
       ),
       body: Column(

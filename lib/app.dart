@@ -15,16 +15,25 @@ class RoomrApp extends ConsumerStatefulWidget {
 
 class _RoomrAppState extends ConsumerState<RoomrApp> {
   @override
+  void initState() {
+    super.initState();
+    // Handle the initial auth state since ref.listen no longer supports fireImmediately.
+    final authState = ref.read(authStateChangesProvider);
+    if (authState.valueOrNull != null) {
+      ref.read(notificationServiceProvider).init();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
 
-    // Initialize push notifications the first time we see an authenticated
-    // user. NotificationService.init() is idempotent.
+    // Initialize push notifications when the user signs in. NotificationService.init() is idempotent.
     ref.listen<AsyncValue<User?>>(authStateChangesProvider, (prev, next) {
       if (next.valueOrNull != null) {
         ref.read(notificationServiceProvider).init();
       }
-    }, fireImmediately: true);
+    });
 
     return MaterialApp.router(
       title: 'Roomr',

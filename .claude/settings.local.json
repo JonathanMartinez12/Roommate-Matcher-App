@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(flutter analyze *)",
-      "Bash(export PATH=\"$PATH:/c/Users/natha/flutter/bin\")"
+      "Bash(export PATH=\"$PATH:/c/Users/natha/flutter/bin\")",
+      "Bash(xargs cat *)"
     ]
   }
 }

@@ -333,6 +333,7 @@ class FirestoreService {
   Future<void> sendMessage({
     required String matchId,
     required String text,
+    required String receiverUserId,
   }) async {
     final msgRef = _matches.doc(matchId).collection('messages').doc();
 
@@ -349,6 +350,7 @@ class FirestoreService {
         'lastMessage': text.trim(),
         'lastMessageAt': FieldValue.serverTimestamp(),
         'readStatus.$currentUserId': true,
+        'readStatus.$receiverUserId': false,
       },
       SetOptions(merge: true),
     );
@@ -360,6 +362,19 @@ class FirestoreService {
       {'readStatus.$currentUserId': true},
       SetOptions(merge: true),
     );
+  }
+
+  Future<void> markAllMatchesRead(List<String> matchIds) async {
+    if (matchIds.isEmpty) return;
+    final batch = _db.batch();
+    for (final matchId in matchIds) {
+      batch.set(
+        _matches.doc(matchId),
+        {'readStatus.$currentUserId': true},
+        SetOptions(merge: true),
+      );
+    }
+    await batch.commit();
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────

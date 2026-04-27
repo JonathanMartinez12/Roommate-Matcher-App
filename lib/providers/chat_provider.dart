@@ -13,11 +13,12 @@ class ChatNotifier extends StateNotifier<bool> {
 
   ChatNotifier(this._service, this._matchId) : super(false);
 
-  Future<void> sendMessage(String text) async {
+  Future<void> sendMessage(String text, {required String receiverUserId}) async {
     if (text.trim().isEmpty) return;
     state = true;
     try {
-      await _service.sendMessage(matchId: _matchId, text: text);
+      await _service.sendMessage(
+          matchId: _matchId, text: text, receiverUserId: receiverUserId);
     } finally {
       state = false;
     }

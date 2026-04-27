@@ -96,7 +96,23 @@ class HomeScreen extends ConsumerWidget {
       if (prev?.id != next?.id) {
         ref.read(homeTabIndexProvider.notifier).state = 0;
       }
-    }); 
+    });
+
+    // Clear badges when the user navigates to the Matches or Messages tab.
+    ref.listen<int>(homeTabIndexProvider, (prev, next) {
+      if (next == 2 || next == 3) {
+        final matches = ref.read(matchesProvider).valueOrNull ?? [];
+        final uid = ref.read(authStateProvider).valueOrNull?.uid ?? '';
+        final unreadIds = matches
+            .where((m) => m.isUnread(uid))
+            .map((m) => m.id)
+            .toList();
+        if (unreadIds.isNotEmpty) {
+          ref.read(firestoreServiceProvider).markAllMatchesRead(unreadIds);
+        }
+      }
+    });
+
     ref.read(firestoreServiceProvider).updateLastActive();
 
     final currentTab = ref.watch(homeTabIndexProvider);
