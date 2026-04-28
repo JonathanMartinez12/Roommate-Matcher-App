@@ -178,33 +178,6 @@ class _PhotoUploadScreenState extends ConsumerState<PhotoUploadScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 24),
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: AppColors.terracottaSoft,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.info_outline,
-                          color: AppColors.terracotta,
-                          size: 18,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            'Custom photo upload is coming soon. For now, pick a template — your match card will show it on the swipe screen.',
-                            style: GoogleFonts.inter(
-                              fontSize: 13,
-                              color: AppColors.terracotta,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                   const SizedBox(height: 32),
 
                   SizedBox(

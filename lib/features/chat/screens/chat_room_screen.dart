@@ -47,9 +47,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
   @override
   void dispose() {
-    // Best-effort clear; don't await since dispose is synchronous.
-    ref.read(activeChatIdProvider.notifier).state = null;
-    ref.read(firestoreServiceProvider).setActiveChatId(null);
+    // Best-effort clear — ref may already be disposed by Riverpod at this point.
+    try {
+      ref.read(activeChatIdProvider.notifier).state = null;
+      ref.read(firestoreServiceProvider).setActiveChatId(null);
+    } catch (_) {}
     _textCtrl.dispose();
     _scrollCtrl.dispose();
     super.dispose();
@@ -195,7 +197,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     if (trimmed.isEmpty) return;
     await ref
         .read(chatNotifierProvider(widget.matchId).notifier)
-        .sendMessage(trimmed);
+        .sendMessage(trimmed, receiverUserId: widget.matchedUserId);
     _scrollToBottom();
   }
 
@@ -255,8 +257,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(widget.matchedUserName,
+                            overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.inter(
                                 fontSize: 17,
                                 fontWeight: FontWeight.w600,

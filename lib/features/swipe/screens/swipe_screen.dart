@@ -226,6 +226,7 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
                 return true;
               },
               cardBuilder: (ctx, index, percentX, percentY) {
+                if (index >= profiles.length) return const SizedBox.shrink();
                 return Center(
                   child: SwipeCard(
                     user: profiles[index],

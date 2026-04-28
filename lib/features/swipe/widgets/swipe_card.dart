@@ -72,11 +72,9 @@ class _SwipeCardState extends State<SwipeCard> {
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
             // Photo section
-            SizedBox(
-              height: 380,
+            Flexible(
               child: Stack(
                 fit: StackFit.expand,
                 children: [
