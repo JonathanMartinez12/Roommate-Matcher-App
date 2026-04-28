@@ -214,6 +214,13 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
               numberOfCardsDisplayed: profiles.length > 1 ? 2 : 1,
               scale: 0.95,
               padding: const EdgeInsets.symmetric(vertical: 8),
+              // Super-like has been removed — only horizontal swipes
+              // (left = pass, right = like) are allowed. Disabling vertical
+              // swipes prevents an upward drag from silently dismissing a
+              // card with no backend effect.
+              allowedSwipeDirection: const AllowedSwipeDirection.symmetric(
+                horizontal: true,
+              ),
               onSwipe: (prev, current, direction) {
                 _handleSwipe(profiles[prev], direction);
                 return true;
@@ -234,11 +241,11 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
             ),
           ),
         ),
-        // Action buttons
+        // Action buttons — pass (left) and like (right), centered.
         Padding(
           padding: const EdgeInsets.fromLTRB(32, 8, 32, 32),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _ActionButton(
                 icon: Icons.close,
@@ -246,18 +253,13 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
                 onTap: () => _swiperController.swipe(CardSwiperDirection.left),
                 size: 56,
               ),
+              const SizedBox(width: 56),
               _ActionButton(
                 icon: Icons.favorite,
                 color: AppColors.terracotta,
                 onTap: () => _swiperController.swipe(CardSwiperDirection.right),
                 size: 72,
                 isPrimary: true,
-              ),
-              _ActionButton(
-                icon: Icons.star,
-                color: AppColors.superLike,
-                onTap: () => _swiperController.swipe(CardSwiperDirection.top),
-                size: 56,
               ),
             ],
           ),

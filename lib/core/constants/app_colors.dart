@@ -27,7 +27,6 @@ class AppColors {
   static const Color primaryPurple = terracottaLight;
   static const Color like = Color(0xFF10B981);
   static const Color pass = Color(0xFFEF4444);
-  static const Color superLike = Color(0xFFF59E0B);
   static const Color background = bg;
   static const Color cardBackground = surface;
   static const Color textPrimary = text;
