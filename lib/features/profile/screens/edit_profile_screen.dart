@@ -1,9 +1,11 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../services/firestore_service.dart';
+import '../../../shared/widgets/avatar_picker_sheet.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -43,6 +45,33 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _universityCtrl.text = user.university;
     _bioCtrl.text = user.bio;
     _initialized = true;
+  }
+
+  Future<void> _changeAvatar() async {
+    final user = ref.read(currentUserProvider).valueOrNull;
+    final userId = ref.read(authStateProvider).valueOrNull?.uid;
+    if (userId == null) return;
+    final current = (user?.photoUrls.isNotEmpty ?? false)
+        ? user!.photoUrls.first
+        : null;
+
+    final picked = await AvatarPickerSheet.show(context, current: current);
+    if (picked == null) return;
+
+    // Persist immediately and reflect in the local notifier so the avatar
+    // updates everywhere in the app without needing the Save button.
+    try {
+      await ref.read(firestoreServiceProvider).updateUser(userId, {
+        'photoUrls': [picked],
+      });
+      ref.read(authNotifierProvider.notifier).updateUser(
+            (u) => u.copyWith(photoUrls: [picked]),
+          );
+    } catch (_) {
+      if (mounted) {
+        setState(() => _errorMessage = 'Couldn\'t update your avatar.');
+      }
+    }
   }
 
   Future<void> _save() async {
@@ -115,6 +144,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
+            _buildAvatarHeader(),
+            const SizedBox(height: 24),
             _buildField('Full Name', _nameCtrl,
                 hint: 'Jane Smith',
                 validator: (v) =>
@@ -174,6 +205,64 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             fontWeight: FontWeight.w600,
                             color: Colors.white)),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAvatarHeader() {
+    final user = ref.watch(currentUserProvider).valueOrNull;
+    final url = (user?.photoUrls.isNotEmpty ?? false)
+        ? user!.photoUrls.first
+        : null;
+
+    return Center(
+      child: GestureDetector(
+        onTap: _changeAvatar,
+        child: Stack(
+          alignment: Alignment.bottomRight,
+          children: [
+            Container(
+              width: 110,
+              height: 110,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.terracottaSoft,
+                border: Border.all(color: AppColors.terracotta, width: 2),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: url != null
+                  ? CachedNetworkImage(
+                      imageUrl: url,
+                      fit: BoxFit.cover,
+                      placeholder: (_, __) => const Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.terracotta,
+                          strokeWidth: 2,
+                        ),
+                      ),
+                      errorWidget: (_, __, ___) => const Icon(
+                        Icons.person,
+                        size: 48,
+                        color: AppColors.terracotta,
+                      ),
+                    )
+                  : const Icon(
+                      Icons.person,
+                      size: 48,
+                      color: AppColors.terracotta,
+                    ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: AppColors.terracotta,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.surface, width: 2),
+              ),
+              child: const Icon(Icons.edit, color: Colors.white, size: 14),
             ),
           ],
         ),

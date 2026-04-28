@@ -1,3 +1,4 @@
+import '../core/constants/avatar_templates.dart';
 import '../models/user_model.dart';
 import '../models/match_model.dart';
 import '../models/message_model.dart';
@@ -13,7 +14,7 @@ class MockData {
     major: 'Business Administration',
     university: 'State University',
     bio: 'Junior looking for a chill roommate. I keep my space clean and respect quiet hours during the week.',
-    photoUrls: ['https://i.pravatar.cc/400?img=12'],
+    photoUrls: [AvatarTemplates.pickFor(kCurrentUserId)],
     questionnaire: const Questionnaire(
       sleepSchedule: 'flexible',
       cleanliness: 4,
@@ -38,7 +39,7 @@ class MockData {
       major: 'Computer Science',
       university: 'Stanford University',
       bio: 'CS junior who loves hiking and late-night coding sessions. Looking for a tidy roommate who respects quiet hours.',
-      photoUrls: ['https://i.pravatar.cc/400?img=47'],
+      photoUrls: [AvatarTemplates.pickFor('user_1')],
       questionnaire: const Questionnaire(
         sleepSchedule: 'early_bird',
         cleanliness: 5,
@@ -61,7 +62,7 @@ class MockData {
       major: 'Pre-Medicine',
       university: 'UCLA',
       bio: 'Med-track senior. I study a lot but always up for a good conversation. Very respectful of shared spaces.',
-      photoUrls: ['https://i.pravatar.cc/400?img=3'],
+      photoUrls: [AvatarTemplates.pickFor('user_2')],
       questionnaire: const Questionnaire(
         sleepSchedule: 'flexible',
         cleanliness: 4,
@@ -84,7 +85,7 @@ class MockData {
       major: 'Psychology',
       university: 'NYU',
       bio: 'Psychology junior, plant mom, and amateur chef. I love keeping common areas clean and hosting occasional dinners.',
-      photoUrls: ['https://i.pravatar.cc/400?img=48'],
+      photoUrls: [AvatarTemplates.pickFor('user_3')],
       questionnaire: const Questionnaire(
         sleepSchedule: 'night_owl',
         cleanliness: 4,
@@ -107,7 +108,7 @@ class MockData {
       major: 'Mechanical Engineering',
       university: 'Georgia Tech',
       bio: 'Freshman engineer. Clean, organized, and usually up by 7am. Big college football fan on weekends.',
-      photoUrls: ['https://i.pravatar.cc/400?img=15'],
+      photoUrls: [AvatarTemplates.pickFor('user_4')],
       questionnaire: const Questionnaire(
         sleepSchedule: 'early_bird',
         cleanliness: 4,
@@ -130,7 +131,7 @@ class MockData {
       major: 'Finance',
       university: 'Wharton School',
       bio: 'Finance sophomore balancing coursework and entrepreneurship club. Super tidy, early riser, and love morning yoga.',
-      photoUrls: ['https://i.pravatar.cc/400?img=49'],
+      photoUrls: [AvatarTemplates.pickFor('user_5')],
       questionnaire: const Questionnaire(
         sleepSchedule: 'early_bird',
         cleanliness: 5,
@@ -153,7 +154,7 @@ class MockData {
       major: 'Journalism',
       university: 'Northwestern University',
       bio: 'Journalism junior and part-time barista. I write late into the night but I use headphones. Friendly and social on weekends.',
-      photoUrls: ['https://i.pravatar.cc/400?img=27'],
+      photoUrls: [AvatarTemplates.pickFor('user_6')],
       questionnaire: const Questionnaire(
         sleepSchedule: 'night_owl',
         cleanliness: 3,
@@ -176,7 +177,7 @@ class MockData {
       major: 'Biology',
       university: 'Howard University',
       bio: 'Biology senior focused on research. Clean and quiet during the week, love cooking on weekends.',
-      photoUrls: ['https://i.pravatar.cc/400?img=44'],
+      photoUrls: [AvatarTemplates.pickFor('user_7')],
       questionnaire: const Questionnaire(
         sleepSchedule: 'early_bird',
         cleanliness: 5,
@@ -199,7 +200,7 @@ class MockData {
       major: 'Architecture',
       university: 'Cornell University',
       bio: 'Architecture sophomore. My desk might be chaotic but the common areas stay clean. Love a good roommate who\'s down to explore the city.',
-      photoUrls: ['https://i.pravatar.cc/400?img=68'],
+      photoUrls: [AvatarTemplates.pickFor('user_8')],
       questionnaire: const Questionnaire(
         sleepSchedule: 'flexible',
         cleanliness: 3,
