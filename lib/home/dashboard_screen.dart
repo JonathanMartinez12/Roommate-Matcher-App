@@ -135,8 +135,14 @@ class _DesktopDashboard extends ConsumerWidget {
           const SizedBox(height: 36),
 
           // ── Stats row ────────────────────────────────────────────────────
-          Row(
-            children: [
+          // IntrinsicHeight + stretch makes all four cards take the height
+          // of the tallest one — otherwise the Avg. compatibility / Unread
+          // messages cards (which sometimes have no subtext line) render
+          // shorter than the others.
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
               Expanded(
                 child: _StatCard(
                   iconData: Icons.visibility_outlined,
@@ -181,7 +187,8 @@ class _DesktopDashboard extends ConsumerWidget {
                   accentColor: const Color(0x26FBBF24),
                 ),
               ),
-            ],
+              ],
+            ),
           ),
           const SizedBox(height: 32),
 
