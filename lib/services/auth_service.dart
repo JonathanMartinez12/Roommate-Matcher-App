@@ -71,8 +71,18 @@ class AuthService {
 
   // ── Sign out ─────────────────────────────────────────────────────────────
   Future<void> signOut() async {
-    // Remove this device's FCM token before losing Firestore auth.
-    await _ref.read(notificationServiceProvider).clearTokenForCurrentUser();
+    // Best-effort FCM token cleanup. This must NEVER block the actual
+    // sign-out — `FirebaseMessaging.getToken()` can throw on web, on iOS
+    // simulators without push entitlements, on devices that have denied
+    // notification permission, etc. Without this guard a token-fetch
+    // exception bubbles all the way out of signOut() and the screen-level
+    // `context.go('/login')` redirect never runs, leaving the user
+    // stranded on a "signed out" home page.
+    try {
+      await _ref.read(notificationServiceProvider).clearTokenForCurrentUser();
+    } catch (_) {
+      // Ignore — auth signout below is the source of truth.
+    }
     // Clear local profile state first so the router sees null immediately.
     _ref.read(authNotifierProvider.notifier).clearUser();
     await _auth.signOut();

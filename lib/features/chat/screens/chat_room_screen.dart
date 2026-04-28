@@ -9,6 +9,7 @@ import '../../../providers/chat_provider.dart';
 import '../../../providers/matches_provider.dart';
 import '../../../services/firestore_service.dart';
 import '../../../services/notification_service.dart';
+import '../widgets/icebreaker_dialog.dart';
 import '../widgets/message_bubble.dart';
 
 class ChatRoomScreen extends ConsumerStatefulWidget {
@@ -167,6 +168,34 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     await ref
         .read(chatNotifierProvider(widget.matchId).notifier)
         .sendMessage(text, receiverUserId: widget.matchedUserId);
+    _scrollToBottom();
+  }
+
+  Future<void> _openIcebreaker() async {
+    final me = ref.read(currentUserProvider).valueOrNull;
+    if (me == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Loading your profile, try again in a moment.')),
+      );
+      return;
+    }
+    // Pull the matched user's profile (cached by FutureProvider). If it's
+    // not ready yet we still let the dialog open with `null` and the
+    // service will fall back to generic prompts.
+    final other =
+        ref.read(matchUserProvider(widget.matchedUserId)).valueOrNull;
+
+    final result = await IcebreakerDialog.show(
+      context,
+      me: me,
+      other: other,
+    );
+    if (result == null || !mounted) return;
+    final trimmed = result.trim();
+    if (trimmed.isEmpty) return;
+    await ref
+        .read(chatNotifierProvider(widget.matchId).notifier)
+        .sendMessage(trimmed);
     _scrollToBottom();
   }
 
@@ -358,6 +387,26 @@ Builder(builder: (_) {
       ),
       child: Row(
         children: [
+          GestureDetector(
+            onTap: isSending ? null : _openIcebreaker,
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.terracottaSoft,
+                shape: BoxShape.circle,
+                border: Border.all(
+                    color: AppColors.terracotta.withValues(alpha: 0.4),
+                    width: 1.5),
+              ),
+              child: const Icon(
+                Icons.auto_awesome,
+                color: AppColors.terracotta,
+                size: 20,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
           Expanded(
             child: Container(
               decoration: BoxDecoration(

@@ -199,7 +199,14 @@ class ProfileScreen extends ConsumerWidget {
               _ActionButton(
                 label: 'Sign out',
                 onTap: () async {
-                  await ref.read(authServiceProvider).signOut();
+                  // Always navigate to /login, even if signOut throws —
+                  // keeps the user from getting stuck on the profile page
+                  // when FCM token cleanup or network calls fail.
+                  try {
+                    await ref.read(authServiceProvider).signOut();
+                  } catch (e) {
+                    debugPrint('[ProfileScreen] signOut error: $e');
+                  }
                   if (context.mounted) context.go('/login');
                 },
                 isDark: false,
