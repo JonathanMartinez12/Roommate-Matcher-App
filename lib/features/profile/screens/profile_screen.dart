@@ -199,7 +199,11 @@ class ProfileScreen extends ConsumerWidget {
               _ActionButton(
                 label: 'Sign out',
                 onTap: () async {
-                  await ref.read(authServiceProvider).signOut();
+                  try {
+                    await ref.read(authServiceProvider).signOut();
+                  } catch (e, st) {
+                    debugPrint('Sign out failed: $e\n$st');
+                  }
                   if (context.mounted) context.go('/login');
                 },
                 isDark: false,

@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_model.dart';
-import 'notification_service.dart';
 
 // ── Firebase Auth instance ─────────────────────────────────────────────────
 
@@ -71,11 +70,21 @@ class AuthService {
 
   // ── Sign out ─────────────────────────────────────────────────────────────
   Future<void> signOut() async {
-    // Remove this device's FCM token before losing Firestore auth.
-    await _ref.read(notificationServiceProvider).clearTokenForCurrentUser();
     // Clear local profile state first so the router sees null immediately.
     _ref.read(authNotifierProvider.notifier).clearUser();
-    await _auth.signOut();
+    // Firebase Web sometimes throws non-fatal errors during signOut (e.g.
+    // firebase_messaging service worker registration failures). Swallow
+    // them — the local notifier is already cleared and we attempt the
+    // Firebase signOut regardless. If Firebase auth itself fails, the next
+    // call to currentUser will reveal the stale session.
+    try {
+      await _auth.signOut();
+    } catch (_) {
+      // Best-effort: try once more without awaiting in case the first call
+      // partially succeeded.
+      // ignore: unawaited_futures
+      _auth.signOut();
+    }
   }
 
   // ── Password reset email ─────────────────────────────────────────────────

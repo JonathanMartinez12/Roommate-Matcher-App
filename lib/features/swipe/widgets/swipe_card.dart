@@ -46,8 +46,9 @@ class _SwipeCardState extends State<SwipeCard> {
         final width = context.size?.width ?? 300;
         if (details.localPosition.dx > width / 2) {
           setState(() {
-            if (_currentPhotoIndex < widget.user.photoUrls.length - 1)
+            if (_currentPhotoIndex < widget.user.photoUrls.length - 1) {
               _currentPhotoIndex++;
+            }
           });
         } else {
           setState(() {

@@ -410,7 +410,7 @@ class _QuestionnaireScreenState extends ConsumerState<QuestionnaireScreen> {
             Switch(
               value: value,
               onChanged: onChanged,
-              activeColor: AppColors.terracotta,
+              activeThumbColor: AppColors.terracotta,
             ),
           ],
         ),

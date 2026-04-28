@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../providers/auth_provider.dart';
-import '../../../services/firestore_service.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -30,25 +29,6 @@ class SettingsScreen extends ConsumerWidget {
             _tile(context, icon: Icons.tune_outlined, title: 'Lifestyle Preferences', onTap: () => context.push('/profile/preferences')),
           ]),
           const SizedBox(height: 16),
-          _section('Notifications', [
-            _switchTile(
-              icon: Icons.favorite_outline,
-              title: 'New matches',
-              value: user?.notifyOnMatch ?? true,
-              onChanged: (v) => ref
-                  .read(firestoreServiceProvider)
-                  .updateNotificationPreferences(notifyOnMatch: v),
-            ),
-            _switchTile(
-              icon: Icons.chat_bubble_outline,
-              title: 'New messages',
-              value: user?.notifyOnMessage ?? true,
-              onChanged: (v) => ref
-                  .read(firestoreServiceProvider)
-                  .updateNotificationPreferences(notifyOnMessage: v),
-            ),
-          ]),
-          const SizedBox(height: 16),
           _section('Info', [
             _tile(context, icon: Icons.mail_outline, title: 'Email', subtitle: user?.email ?? '', onTap: null),
           ]),
@@ -62,7 +42,11 @@ class SettingsScreen extends ConsumerWidget {
             width: double.infinity,
             child: OutlinedButton(
               onPressed: () async {
-                await ref.read(authServiceProvider).signOut();
+                try {
+                  await ref.read(authServiceProvider).signOut();
+                } catch (e, st) {
+                  debugPrint('Sign out failed: $e\n$st');
+                }
                 if (context.mounted) context.go('/login');
               },
               style: OutlinedButton.styleFrom(
@@ -92,35 +76,6 @@ class SettingsScreen extends ConsumerWidget {
         ),
       ],
     ));
-  }
-
-  Widget _switchTile({
-    required IconData icon,
-    required String title,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: Row(
-        children: [
-          Icon(icon, size: 22, color: AppColors.terracotta),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(title,
-                style: GoogleFonts.inter(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.navy)),
-          ),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeColor: AppColors.terracotta,
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _tile(BuildContext context, {required IconData icon, required String title, String? subtitle, VoidCallback? onTap}) {
