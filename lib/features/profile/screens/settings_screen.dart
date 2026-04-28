@@ -62,7 +62,12 @@ class SettingsScreen extends ConsumerWidget {
             width: double.infinity,
             child: OutlinedButton(
               onPressed: () async {
-                await ref.read(authServiceProvider).signOut();
+                // Always navigate to /login, even if signOut throws.
+                try {
+                  await ref.read(authServiceProvider).signOut();
+                } catch (e) {
+                  debugPrint('[SettingsScreen] signOut error: $e');
+                }
                 if (context.mounted) context.go('/login');
               },
               style: OutlinedButton.styleFrom(

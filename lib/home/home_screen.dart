@@ -112,7 +112,14 @@ class HomeScreen extends ConsumerWidget {
               onTap: (i) =>
                   ref.read(homeTabIndexProvider.notifier).state = i,
               onLogout: () async {
-                await ref.read(authServiceProvider).signOut();
+                // Try to sign out, but ALWAYS navigate back to /login —
+                // even if the auth call throws — so the user never ends
+                // up stuck on the home screen after tapping Sign out.
+                try {
+                  await ref.read(authServiceProvider).signOut();
+                } catch (e) {
+                  debugPrint('[HomeScreen] signOut error: $e');
+                }
                 if (context.mounted) context.go('/login');
               },
             ),
