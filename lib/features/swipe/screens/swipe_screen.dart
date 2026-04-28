@@ -301,7 +301,7 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
           children: [
             Container(
               width: 100, height: 100,
-              decoration: BoxDecoration(color: AppColors.terracottaSoft, shape: BoxShape.circle),
+              decoration: const BoxDecoration(color: AppColors.terracottaSoft, shape: BoxShape.circle),
               child: const Icon(Icons.people_outline, size: 52, color: AppColors.terracotta),
             ),
             const SizedBox(height: 20),

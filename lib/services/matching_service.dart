@@ -28,23 +28,27 @@ List<String> tagsFromQuestionnaire(Questionnaire q, {int maxTags = 5}) {
   final tags = <String>[];
 
   // Sleep
-  if (q.sleepSchedule == 'early_bird') tags.add('Early bird');
-  else if (q.sleepSchedule == 'night_owl') tags.add('Night owl');
+  if (q.sleepSchedule == 'early_bird') {
+    tags.add('Early bird');
+  } else if (q.sleepSchedule == 'night_owl') tags.add('Night owl');
   else tags.add('Flexible sleeper');
 
   // Cleanliness
-  if (q.cleanliness >= 5) tags.add('Spotless');
-  else if (q.cleanliness == 4) tags.add('Very clean');
+  if (q.cleanliness >= 5) {
+    tags.add('Spotless');
+  } else if (q.cleanliness == 4) tags.add('Very clean');
   else if (q.cleanliness <= 2) tags.add('Relaxed about mess');
 
   // Study
-  if (q.studyHabits == 'library') tags.add('Library studier');
-  else if (q.studyHabits == 'cafe') tags.add('Café studier');
+  if (q.studyHabits == 'library') {
+    tags.add('Library studier');
+  } else if (q.studyHabits == 'cafe') tags.add('Café studier');
   else if (q.studyHabits == 'at_home') tags.add('Studies at home');
 
   // Guests
-  if (q.guestPolicy == 'frequently') tags.add('Social butterfly');
-  else if (q.guestPolicy == 'never') tags.add('Prefers quiet');
+  if (q.guestPolicy == 'frequently') {
+    tags.add('Social butterfly');
+  } else if (q.guestPolicy == 'never') tags.add('Prefers quiet');
 
   // Lifestyle
   if (!q.smoking) tags.add('Non-smoker');
@@ -52,8 +56,9 @@ List<String> tagsFromQuestionnaire(Questionnaire q, {int maxTags = 5}) {
   if (!q.drinking) tags.add('Non-drinker');
 
   // Temperature
-  if (q.temperaturePreference == 'cool') tags.add('Likes it cool');
-  else if (q.temperaturePreference == 'warm') tags.add('Likes it warm');
+  if (q.temperaturePreference == 'cool') {
+    tags.add('Likes it cool');
+  } else if (q.temperaturePreference == 'warm') tags.add('Likes it warm');
 
   return tags.take(maxTags).toList();
 }

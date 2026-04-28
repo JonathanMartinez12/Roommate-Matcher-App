@@ -25,11 +25,6 @@ class _SplashScreenState extends State<SplashScreen>
     _pulseAnim = Tween<double>(begin: 0.65, end: 1.0).animate(
       CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut),
     );
-
-    // Auto-navigate after 2.5 s
-    Future.delayed(const Duration(milliseconds: 2500), () {
-      if (mounted) context.go('/login');
-    });
   }
 
   @override

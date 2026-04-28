@@ -486,7 +486,7 @@ class _EditPreferencesScreenState
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: AppColors.terracotta,
+            activeThumbColor: AppColors.terracotta,
           ),
         ],
       ),
