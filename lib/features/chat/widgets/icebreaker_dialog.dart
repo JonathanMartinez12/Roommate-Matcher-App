@@ -46,7 +46,15 @@ class IcebreakerDialog extends StatefulWidget {
 class _IcebreakerDialogState extends State<IcebreakerDialog> {
   final _service = IcebreakerService();
   final _controller = TextEditingController();
+
+  /// Tracks every question shown in this popup session. A question won't
+  /// be surfaced twice unless every other candidate has been shown — at
+  /// which point [_seen] is cleared and a fresh cycle begins.
   final _seen = <String>{};
+
+  /// True for the brief moment after a full pool cycle completes, so the
+  /// UI can show a small "starting fresh" indicator under the header.
+  bool _justRecycled = false;
 
   @override
   void initState() {
@@ -55,16 +63,32 @@ class _IcebreakerDialogState extends State<IcebreakerDialog> {
   }
 
   void _generate() {
-    final next = _service.generate(
+    var suggestion = _service.generate(
       widget.me,
       widget.other,
       exclude: _seen,
     );
-    _seen.add(next);
-    _controller.text = next;
+    var recycled = false;
+
+    // Pool exhausted — clear the seen-set and pull again so the user is
+    // guaranteed a question they haven't seen this cycle (unless the
+    // entire pool truly is just one item, which the service handles).
+    if (!suggestion.isFresh) {
+      recycled = true;
+      _seen.clear();
+      suggestion = _service.generate(
+        widget.me,
+        widget.other,
+        exclude: _seen,
+      );
+    }
+
+    _seen.add(suggestion.text);
+    _controller.text = suggestion.text;
     _controller.selection = TextSelection.fromPosition(
       TextPosition(offset: _controller.text.length),
     );
+    _justRecycled = recycled;
   }
 
   @override
@@ -134,10 +158,17 @@ class _IcebreakerDialogState extends State<IcebreakerDialog> {
                         ),
                       ),
                       Text(
-                        'Tweak it, send it, or generate a new one.',
+                        _justRecycled
+                            ? 'You\'ve seen them all — starting a fresh cycle.'
+                            : 'Tweak it, send it, or generate a new one.',
                         style: GoogleFonts.inter(
                           fontSize: 12,
-                          color: AppColors.textMuted,
+                          color: _justRecycled
+                              ? AppColors.terracotta
+                              : AppColors.textMuted,
+                          fontWeight: _justRecycled
+                              ? FontWeight.w600
+                              : FontWeight.w400,
                         ),
                       ),
                     ],
