@@ -24,7 +24,7 @@ class _RoomrAppState extends ConsumerState<RoomrApp> {
       if (next.valueOrNull != null) {
         ref.read(notificationServiceProvider).init();
       }
-    }, fireImmediately: true);
+    });
 
     return MaterialApp.router(
       title: 'Roomr',
